@@ -5,12 +5,11 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "fs:default",
-    "fs:read-all",
-    "fs:read-dirs",
-    "fs:read-files",
-    "path:default",
-    "dialog:default",
+    "core:path:default",
+    "fs:allow-read",
+    "fs:allow-read-text-file",
+    "fs:allow-read-dir",
+    "fs:allow-exists",
     "dialog:allow-open"
   ]
 }
