@@ -1,1 +1,68 @@
-/* DocViewer global styles */
+@import "tailwindcss";
+
+:root[data-theme="dark"] {
+  --bg: #1e1e1e;
+  --sidebar: #252526;
+  --panel: #2d2d30;
+  --text: #cccccc;
+  --title: #ffffff;
+  --primary: #007acc;
+  --border: #3c3c3c;
+  --hover-bg: #2a2d2e;
+  --active-bg: #37373d;
+  --scrollbar-thumb: #424242;
+  --scrollbar-track: transparent;
+}
+
+:root[data-theme="light"] {
+  --bg: #ffffff;
+  --sidebar: #f3f3f3;
+  --panel: #ffffff;
+  --text: #333333;
+  --title: #1e1e1e;
+  --primary: #0078d4;
+  --border: #e0e0e0;
+  --hover-bg: #e8e8e8;
+  --active-bg: #dcdcdc;
+  --scrollbar-thumb: #c1c1c1;
+  --scrollbar-track: #f3f3f3;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body, #app {
+  height: 100%; width: 100%; overflow: hidden;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 13px; line-height: 1.5;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #555; }
+
+.markdown-content {
+  padding: 2rem; max-width: 860px; margin: 0 auto; color: var(--text);
+}
+.markdown-content h1 { font-size: 2em; font-weight: 600; margin: 0.67em 0; padding-bottom: 0.3em; border-bottom: 1px solid var(--border); color: var(--title); }
+.markdown-content h2 { font-size: 1.5em; font-weight: 600; margin: 0.83em 0; padding-bottom: 0.3em; border-bottom: 1px solid var(--border); color: var(--title); }
+.markdown-content h3 { font-size: 1.25em; font-weight: 600; margin: 1em 0; color: var(--title); }
+.markdown-content h4, .markdown-content h5, .markdown-content h6 { font-size: 1em; font-weight: 600; margin: 1em 0; color: var(--title); }
+.markdown-content p { margin: 0.5em 0; line-height: 1.7; }
+.markdown-content ul, .markdown-content ol { padding-left: 2em; margin: 0.5em 0; }
+.markdown-content li { margin: 0.25em 0; }
+.markdown-content code { background-color: var(--panel); padding: 0.2em 0.4em; border-radius: 3px; font-family: "Cascadia Code", "Fira Code", "JetBrains Mono", Consolas, monospace; font-size: 0.9em; color: var(--primary); }
+.markdown-content pre { background-color: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-x: auto; margin: 1em 0; }
+.markdown-content pre code { background: none; padding: 0; color: var(--text); }
+.markdown-content blockquote { border-left: 4px solid var(--primary); padding: 0.5em 1em; margin: 1em 0; background-color: var(--panel); border-radius: 0 4px 4px 0; }
+.markdown-content table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+.markdown-content th, .markdown-content td { border: 1px solid var(--border); padding: 0.5em 0.75em; text-align: left; }
+.markdown-content th { background-color: var(--panel); font-weight: 600; color: var(--title); }
+.markdown-content a { color: var(--primary); text-decoration: none; }
+.markdown-content a:hover { text-decoration: underline; }
+.markdown-content img { max-width: 100%; border-radius: 4px; }
+.markdown-content hr { border: none; border-top: 1px solid var(--border); margin: 1.5em 0; }
+.markdown-content .header-anchor { opacity: 0; margin-left: 0.5em; color: var(--primary); font-size: 0.8em; text-decoration: none; transition: opacity 0.15s; }
+.markdown-content h1:hover .header-anchor, .markdown-content h2:hover .header-anchor, .markdown-content h3:hover .header-anchor, .markdown-content h4:hover .header-anchor, .markdown-content h5:hover .header-anchor, .markdown-content h6:hover .header-anchor { opacity: 1; }
