@@ -1,5 +1,22 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useKeyboard } from '@/composables/useKeyboard'
+import MainLayout from '@/layouts/MainLayout.vue'
+import SearchOverlay from '@/components/search/SearchOverlay.vue'
+import MarkdownViewer from '@/components/viewer/MarkdownViewer.vue'
+import WelcomePage from '@/pages/WelcomePage.vue'
+import { useDocumentStore } from '@/stores/documentStore'
+
+useKeyboard()
+
+const documentStore = useDocumentStore()
+const showWelcome = computed(() => !documentStore.rootPath || documentStore.docTree.length === 0)
+</script>
+
 <template>
-  <div class="h-screen w-screen bg-slate-900 flex items-center justify-center">
-    <h1 class="text-3xl font-bold text-white">DocViewer</h1>
-  </div>
+  <MainLayout>
+    <WelcomePage v-if="showWelcome" />
+    <MarkdownViewer v-else />
+  </MainLayout>
+  <SearchOverlay />
 </template>
