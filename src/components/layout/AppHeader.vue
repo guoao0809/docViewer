@@ -3,7 +3,6 @@ import { useSearchStore } from '@/stores/searchStore'
 import { useSettingStore } from '@/stores/settingStore'
 import { useDocumentStore } from '@/stores/documentStore'
 import { openFileDialog } from '@/services/tauriService'
-import { Button } from '@/components/ui/button'
 import { Search, FolderOpen, Minimize2, Sun, Moon } from 'lucide-vue-next'
 
 const searchStore = useSearchStore()
@@ -21,39 +20,64 @@ function handleToggleTheme() { settingStore.doToggleTheme() }
 
 <template>
   <header
-    class="flex items-center justify-between px-3 select-none shrink-0"
-    style="background-color: var(--sidebar); border-bottom: 1px solid var(--border);"
+    class="flex items-center justify-between h-12 px-4 select-none shrink-0"
+    style="background-color: var(--sidebar);"
   >
-    <div class="flex items-center gap-2">
-      <div class="w-6 h-6 rounded flex items-center justify-center" style="background-color: var(--primary);">
-        <span class="text-white text-xs font-bold">D</span>
-      </div>
-      <span class="text-sm font-semibold" style="color: var(--title);">DocViewer</span>
-    </div>
-
-    <div class="flex-1 max-w-xl mx-4">
+    <!-- 左侧: Logo + 名称 -->
+    <div class="flex items-center gap-3 shrink-0">
       <div
-        class="flex items-center gap-2 px-3 py-1.5 rounded text-sm cursor-pointer"
-        style="background-color: var(--bg); border: 1px solid var(--border); color: var(--text);"
-        @click="handleSearchClick"
+        class="w-7 h-7 rounded flex items-center justify-center"
+        style="background-color: var(--primary);"
       >
-        <Search class="w-4 h-4 opacity-50" />
-        <span class="opacity-60">搜索文档...</span>
-        <kbd class="ml-auto text-xs px-1.5 py-0.5 rounded opacity-40" style="background-color: var(--panel);">Ctrl+K</kbd>
+        <span class="text-white text-sm font-bold">D</span>
+      </div>
+      <span class="text-sm font-semibold tracking-wide" style="color: var(--title);">DocViewer</span>
+    </div>
+
+    <!-- 中间: 搜索入口 -->
+    <div
+      class="flex-1 max-w-lg mx-6 cursor-pointer"
+      @click="handleSearchClick"
+    >
+      <div
+        class="flex items-center gap-2 h-8 px-4 rounded-md text-sm"
+        style="background-color: var(--bg); border: 1px solid var(--border); color: var(--text);"
+      >
+        <Search class="w-4 h-4 shrink-0" style="opacity: 0.5;" />
+        <span style="opacity: 0.5;">搜索文档...</span>
+        <kbd
+          class="ml-auto text-xs px-2 py-0.5 rounded shrink-0"
+          style="background-color: var(--panel); border: 1px solid var(--border); opacity: 0.4; font-family: inherit;"
+        >Ctrl+K</kbd>
       </div>
     </div>
 
-    <div class="flex items-center gap-1">
-      <Button variant="ghost" size="icon" @click="handleOpenFolder" title="打开文件夹">
+    <!-- 右侧: 操作按钮 -->
+    <div class="flex items-center gap-2 shrink-0">
+      <button
+        class="h-8 w-8 flex items-center justify-center rounded hover:bg-white/5 transition-colors"
+        style="color: var(--text);"
+        @click="handleOpenFolder"
+        title="打开文件夹"
+      >
         <FolderOpen class="w-4 h-4" />
-      </Button>
-      <Button variant="ghost" size="icon" title="Mini Window (V1.1)">
+      </button>
+      <button
+        class="h-8 w-8 flex items-center justify-center rounded hover:bg-white/5 transition-colors"
+        style="color: var(--text); opacity: 0.5;"
+        title="Mini Window (V1.1)"
+      >
         <Minimize2 class="w-4 h-4" />
-      </Button>
-      <Button variant="ghost" size="icon" @click="handleToggleTheme" title="切换主题">
+      </button>
+      <button
+        class="h-8 w-8 flex items-center justify-center rounded hover:bg-white/5 transition-colors"
+        style="color: var(--text);"
+        @click="handleToggleTheme"
+        title="切换主题"
+      >
         <Sun v-if="settingStore.theme === 'dark'" class="w-4 h-4" />
         <Moon v-else class="w-4 h-4" />
-      </Button>
+      </button>
     </div>
   </header>
 </template>

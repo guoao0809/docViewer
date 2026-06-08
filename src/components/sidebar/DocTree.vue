@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useDocumentStore } from '@/stores/documentStore'
 import { useTabStore } from '@/stores/tabStore'
 import type { DocMeta } from '@/types/document'
-import { ChevronRight, ChevronDown, FileText, Folder, FolderOpen } from 'lucide-vue-next'
 
 const documentStore = useDocumentStore()
 const tabStore = useTabStore()
@@ -19,63 +17,31 @@ function handleClick(doc: DocMeta) {
     documentStore.doLoadDocument(doc.id)
   }
 }
-
-function handleContextMenu(event: MouseEvent, doc: DocMeta) {
-  event.preventDefault()
-}
 </script>
 
 <template>
   <div class="flex-1 overflow-y-auto">
-    <div class="flex items-center px-4 text-xs font-semibold uppercase tracking-wider" style="height: 30px; color: var(--text); opacity: 0.7;">
-      Documents
-    </div>
     <div v-if="documentStore.docTree.length === 0" class="px-4 py-3 text-xs" style="color: var(--text); opacity: 0.4;">
       未找到支持的文档文件
     </div>
 
-    <!-- Tree nodes rendered inline with recursive template -->
     <template v-for="doc in documentStore.docTree" :key="doc.id">
-      <div>
-        <div
-          class="flex items-center gap-1 px-2 py-0.5 cursor-pointer text-sm"
-          :style="{ paddingLeft: '8px', backgroundColor: isActive(doc.id) ? 'var(--active-bg)' : 'transparent', color: isActive(doc.id) ? 'var(--title)' : 'var(--text)' }"
-          @click="handleClick(doc)"
-          @contextmenu="handleContextMenu($event, doc)"
-        >
-          <template v-if="doc.children">
-            <ChevronRight v-if="!isExpanded(doc.id)" class="w-3.5 h-3.5 shrink-0" />
-            <ChevronDown v-else class="w-3.5 h-3.5 shrink-0" />
-            <Folder v-if="!isExpanded(doc.id)" class="w-4 h-4 shrink-0 text-yellow-400" />
-            <FolderOpen v-else class="w-4 h-4 shrink-0 text-yellow-500" />
-          </template>
-          <FileText v-else class="w-4 h-4 shrink-0 opacity-60" />
-          <span class="truncate">{{ doc.name }}</span>
-        </div>
-
-        <!-- Recursive children -->
-        <template v-if="doc.children && isExpanded(doc.id)">
-          <template v-for="child in doc.children" :key="child.id">
-            <DocTreeItem
-              :doc="child"
-              :depth="1"
-              :expanded="isExpanded(child.id)"
-              :active="isActive(child.id)"
-              @click="handleClick(child)"
-              @contextmenu="handleContextMenu($event, child)"
-            />
-          </template>
-        </template>
-      </div>
+      <DocTreeItem
+        :doc="doc"
+        :depth="0"
+        :expanded="isExpanded(doc.id)"
+        :active="isActive(doc.id)"
+        @click="handleClick(doc)"
+      />
     </template>
   </div>
 </template>
 
-<!-- Recursive tree item component -->
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue'
+import { ChevronRight, ChevronDown, FileText, Folder, FolderOpen } from 'lucide-vue-next'
 
-export const DocTreeItem = defineComponent({
+const DocTreeItem = defineComponent({
   name: 'DocTreeItem',
   props: {
     doc: { type: Object as PropType<DocMeta>, required: true },
@@ -84,24 +50,27 @@ export const DocTreeItem = defineComponent({
     active: { type: Boolean, required: true },
   },
   components: { ChevronRight, ChevronDown, FileText, Folder, FolderOpen },
-  emits: ['click', 'contextmenu'],
+  emits: ['click'],
   template: `
     <div>
       <div
-        class="flex items-center gap-1 px-2 py-0.5 cursor-pointer text-sm"
+        class="flex items-center gap-1.5 cursor-pointer text-sm transition-colors"
+        :data-docid="doc.id"
         :style="{
-          paddingLeft: (depth * 16 + 8) + 'px',
+          paddingLeft: (depth * 16 + 16) + 'px',
           backgroundColor: active ? 'var(--active-bg)' : 'transparent',
           color: active ? 'var(--title)' : 'var(--text)',
+          lineHeight: '22px',
         }"
         @click="$emit('click')"
-        @contextmenu="$emit('contextmenu', $event)"
+        @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = 'var(--hover-bg)'"
+        @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = active ? 'var(--active-bg)' : 'transparent'"
       >
         <template v-if="doc.children">
-          <component :is="expanded ? ChevronDown : ChevronRight" class="w-3.5 h-3.5 shrink-0" />
-          <component :is="expanded ? FolderOpen : Folder" class="w-4 h-4 shrink-0" :class="expanded ? 'text-yellow-500' : 'text-yellow-400'" />
+          <component :is="expanded ? 'ChevronDown' : 'ChevronRight'" class="w-3.5 h-3.5 shrink-0" />
+          <component :is="expanded ? 'FolderOpen' : 'Folder'" class="w-4 h-4 shrink-0" style="color: #e8a44a;" />
         </template>
-        <FileText v-else class="w-4 h-4 shrink-0 opacity-60" />
+        <FileText v-else class="w-4 h-4 shrink-0" style="opacity: 0.5;" />
         <span class="truncate">{{ doc.name }}</span>
       </div>
       <template v-if="doc.children && expanded">
@@ -112,10 +81,13 @@ export const DocTreeItem = defineComponent({
           :depth="depth + 1"
           :expanded="false"
           :active="false"
-          v-bind="$attrs"
+          @click="$emit('click')"
         />
       </template>
     </div>
   `
 })
+
+export default DocTreeItem
+export { DocTreeItem }
 </script>

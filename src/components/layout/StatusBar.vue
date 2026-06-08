@@ -6,23 +6,23 @@ const documentStore = useDocumentStore()
 
 const statusText = computed(() => {
   const doc = documentStore.currentDoc
-  if (!doc) return 'DocViewer — 未打开文档'
+  if (!doc) return 'DocViewer'
   const size = doc.meta.size > 1024 * 1024
     ? `${(doc.meta.size / (1024 * 1024)).toFixed(1)} MB`
     : doc.meta.size > 1024
     ? `${(doc.meta.size / 1024).toFixed(1)} KB`
     : `${doc.meta.size} B`
   const lines = doc.raw.split('\n').length
-  return `${doc.meta.path}  |  ${size}  |  ${lines} 行`
+  return `${doc.meta.name}  |  ${size}  |  ${lines} 行`
 })
 </script>
 
 <template>
   <footer
-    class="flex items-center justify-between px-3 text-xs select-none shrink-0"
-    style="background-color: var(--primary); color: #fff; height: 24px;"
+    class="flex items-center justify-between h-6 px-3 text-xs select-none shrink-0"
+    style="background-color: var(--primary); color: #fff;"
   >
-    <span class="truncate mr-4">{{ statusText }}</span>
+    <span class="truncate">{{ statusText }}</span>
     <span class="shrink-0">UTF-8</span>
   </footer>
 </template>

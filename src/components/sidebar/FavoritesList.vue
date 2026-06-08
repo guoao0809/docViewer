@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useDocumentStore } from '@/stores/documentStore'
 import { useTabStore } from '@/stores/tabStore'
 import type { DocMeta } from '@/types/document'
-import { FileText } from 'lucide-vue-next'
+import { FileText, Star, ChevronDown, ChevronRight } from 'lucide-vue-next'
 
 const documentStore = useDocumentStore()
 const tabStore = useTabStore()
+const collapsed = ref(false)
 
 function getAllDocs(docs: DocMeta[]): DocMeta[] {
   const result: DocMeta[] = []
@@ -26,18 +27,29 @@ function openDoc(doc: DocMeta) {
 </script>
 
 <template>
-  <div v-if="favorites.length > 0">
-    <div class="flex items-center px-4 text-xs font-semibold uppercase tracking-wider" style="height: 30px; color: var(--text); opacity: 0.7;">
-      Favorites
-    </div>
+  <div v-if="favorites.length > 0" style="border-bottom: 1px solid var(--border);">
     <div
-      v-for="doc in favorites" :key="doc.id"
-      class="flex items-center gap-1.5 px-4 py-0.5 cursor-pointer text-sm hover:opacity-80"
-      style="color: var(--text);"
-      @click="openDoc(doc)"
+      class="flex items-center gap-1 px-4 h-7 cursor-pointer text-xs font-semibold uppercase tracking-wider"
+      style="color: var(--text); opacity: 0.7;"
+      @click="collapsed = !collapsed"
     >
-      <FileText class="w-3.5 h-3.5 shrink-0 opacity-50" />
-      <span class="truncate">{{ doc.name }}</span>
+      <ChevronDown v-if="!collapsed" class="w-3.5 h-3.5 shrink-0" />
+      <ChevronRight v-else class="w-3.5 h-3.5 shrink-0" />
+      <Star class="w-3 h-3 shrink-0" style="color: var(--primary);" />
+      <span>Favorites</span>
+    </div>
+    <div v-show="!collapsed">
+      <div
+        v-for="doc in favorites" :key="doc.id"
+        class="flex items-center gap-2 px-4 cursor-pointer text-sm transition-colors"
+        style="color: var(--text); line-height: 22px;"
+        @click="openDoc(doc)"
+        @mouseenter="(($event.currentTarget) as HTMLElement).style.backgroundColor = 'var(--hover-bg)'"
+        @mouseleave="(($event.currentTarget) as HTMLElement).style.backgroundColor = 'transparent'"
+      >
+        <FileText class="w-3.5 h-3.5 shrink-0" style="opacity: 0.4;" />
+        <span class="truncate">{{ doc.name }}</span>
+      </div>
     </div>
   </div>
 </template>
