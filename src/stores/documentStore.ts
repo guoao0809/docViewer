@@ -83,8 +83,8 @@ export const useDocumentStore = defineStore('document', () => {
   }
 
   async function doScanDirectory(path: string) {
-    // Skip if this folder is already loaded
-    if (rootPaths.value.includes(path)) return
+    // Skip if this folder is already loaded (check actual tree, not just rootPaths)
+    if (docTree.value.some(d => d.id === path)) return
 
     isLoading.value = true
     try {
