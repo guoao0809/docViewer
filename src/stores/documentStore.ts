@@ -39,12 +39,12 @@ export const useDocumentStore = defineStore('document', () => {
   const docTree = ref<DocMeta[]>([])
   const currentDoc = ref<DocContent | null>(null)
   const expandedDirs = ref<Set<string>>(new Set())
-  const rootPath = ref('')
+  const rootPaths = ref<string[]>([])
   const isLoading = ref(false)
 
   function persistState() {
     const state = {
-      rootPath: rootPath.value,
+      rootPaths: rootPaths.value,
       expandedDirs: Array.from(expandedDirs.value),
       docMeta: serializeDocTree(docTree.value),
     }
@@ -56,9 +56,13 @@ export const useDocumentStore = defineStore('document', () => {
       const raw = localStorage.getItem(STORAGE_KEY)
       if (!raw) return
       const state = JSON.parse(raw)
-      if (state.rootPath) rootPath.value = state.rootPath
+      if (state.rootPaths) {
+        rootPaths.value = state.rootPaths as string[]
+      } else if (state.rootPath) {
+        // Migrate from old single-path format
+        rootPaths.value = [state.rootPath as string]
+      }
       if (state.expandedDirs) expandedDirs.value = new Set(state.expandedDirs as string[])
-      // docMeta will be merged when scanDirectory completes
     } catch { /* ignore corrupted data */ }
   }
 
@@ -79,10 +83,10 @@ export const useDocumentStore = defineStore('document', () => {
   }
 
   async function doScanDirectory(path: string) {
+    // Skip if this folder is already loaded
+    if (rootPaths.value.includes(path)) return
+
     isLoading.value = true
-    rootPath.value = path
-    // Reset expanded dirs for the new folder — start with a clean collapsed tree
-    expandedDirs.value = new Set()
     try {
       const tree = await scanDirectory(path)
       // Merge persisted favorite/lastOpen/visitCount data into new tree
@@ -103,7 +107,8 @@ export const useDocumentStore = defineStore('document', () => {
         visitCount: 0,
         children: tree,
       }
-      docTree.value = [rootNode]
+      docTree.value = [...docTree.value, rootNode]
+      rootPaths.value = [...rootPaths.value, path]
       // Auto-expand the root folder
       expandedDirs.value.add(path)
       persistState()
@@ -113,6 +118,17 @@ export const useDocumentStore = defineStore('document', () => {
     } finally {
       isLoading.value = false
     }
+  }
+
+  function doRemoveRootFolder(id: string) {
+    docTree.value = docTree.value.filter(d => d.id !== id)
+    rootPaths.value = rootPaths.value.filter(p => p !== id)
+    expandedDirs.value.delete(id)
+    expandedDirs.value = new Set(expandedDirs.value)
+    persistState()
+    // Rebuild search index
+    const searchStore = useSearchStore()
+    searchStore.doBuildIndex()
   }
 
   async function doLoadDocument(id: string) {
@@ -182,14 +198,17 @@ export const useDocumentStore = defineStore('document', () => {
   // Load persisted state on creation
   loadPersistedState()
 
-  // If a rootPath was persisted, auto-rescan to restore the docTree
-  if (rootPath.value) {
-    doScanDirectory(rootPath.value)
+  // If rootPaths were persisted, auto-rescan to restore the docTree
+  if (rootPaths.value.length > 0) {
+    for (const p of rootPaths.value) {
+      doScanDirectory(p)
+    }
   }
 
   return {
-    docTree, currentDoc, expandedDirs, rootPath, isLoading,
+    docTree, currentDoc, expandedDirs, rootPaths, isLoading,
     doScanDirectory, doLoadDocument, doToggleFavorite, doToggleExpanded,
+    doRemoveRootFolder,
     loadPersistedState, persistState,
   }
 })

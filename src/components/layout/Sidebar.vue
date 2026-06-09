@@ -53,7 +53,7 @@ async function handleOpenFolder() {
     </div>
 
     <!-- 空状态 -->
-    <div v-if="!documentStore.rootPath" class="flex-1 flex flex-col items-center justify-center p-6 text-center">
+    <div v-if="documentStore.rootPaths.length === 0" class="flex-1 flex flex-col items-center justify-center p-6 text-center">
       <div
         class="w-10 h-10 rounded-lg flex items-center justify-center mb-3"
         style="background-color: var(--panel);"

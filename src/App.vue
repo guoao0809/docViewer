@@ -10,7 +10,7 @@ import { useDocumentStore } from '@/stores/documentStore'
 useKeyboard()
 
 const documentStore = useDocumentStore()
-const showWelcome = computed(() => !documentStore.rootPath || documentStore.docTree.length === 0)
+const showWelcome = computed(() => documentStore.rootPaths.length === 0)
 </script>
 
 <template>
