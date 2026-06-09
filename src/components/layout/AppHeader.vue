@@ -3,11 +3,13 @@ import { useSearchStore } from '@/stores/searchStore'
 import { useSettingStore } from '@/stores/settingStore'
 import { useDocumentStore } from '@/stores/documentStore'
 import { openFileDialog } from '@/services/tauriService'
-import { Search, FolderOpen, Minimize2, Sun, Moon } from 'lucide-vue-next'
+import { getCurrentWindow } from '@tauri-apps/api/window'
+import { Search, FolderOpen, Minimize2, Sun, Moon, Minus, Square, X } from 'lucide-vue-next'
 
 const searchStore = useSearchStore()
 const settingStore = useSettingStore()
 const documentStore = useDocumentStore()
+const appWindow = getCurrentWindow()
 
 async function handleOpenFolder() {
   const folder = await openFileDialog()
@@ -22,6 +24,7 @@ function handleToggleTheme() { settingStore.doToggleTheme() }
   <header
     class="flex items-center justify-between h-12 px-4 select-none shrink-0"
     style="background-color: var(--sidebar);"
+    data-tauri-drag-region
   >
     <!-- 左侧: Logo + 名称 -->
     <div class="flex items-center gap-3 shrink-0">
@@ -35,10 +38,7 @@ function handleToggleTheme() { settingStore.doToggleTheme() }
     </div>
 
     <!-- 中间: 搜索入口 -->
-    <div
-      class="flex-1 max-w-lg mx-6 cursor-pointer"
-      @click="handleSearchClick"
-    >
+    <div class="flex-1 max-w-lg mx-6 cursor-pointer" @click="handleSearchClick">
       <div
         class="flex items-center gap-2 h-8 px-4 rounded-md text-sm"
         style="background-color: var(--bg); border: 1px solid var(--border); color: var(--text);"
@@ -53,7 +53,7 @@ function handleToggleTheme() { settingStore.doToggleTheme() }
     </div>
 
     <!-- 右侧: 操作按钮 -->
-    <div class="flex items-center gap-2 shrink-0">
+    <div class="flex items-center gap-1 shrink-0">
       <button
         class="h-8 w-8 flex items-center justify-center rounded hover:bg-white/5 transition-colors"
         style="color: var(--text);"
@@ -64,13 +64,6 @@ function handleToggleTheme() { settingStore.doToggleTheme() }
       </button>
       <button
         class="h-8 w-8 flex items-center justify-center rounded hover:bg-white/5 transition-colors"
-        style="color: var(--text); opacity: 0.5;"
-        title="Mini Window (V1.1)"
-      >
-        <Minimize2 class="w-4 h-4" />
-      </button>
-      <button
-        class="h-8 w-8 flex items-center justify-center rounded hover:bg-white/5 transition-colors"
         style="color: var(--text);"
         @click="handleToggleTheme"
         title="切换主题"
@@ -78,6 +71,34 @@ function handleToggleTheme() { settingStore.doToggleTheme() }
         <Sun v-if="settingStore.theme === 'dark'" class="w-4 h-4" />
         <Moon v-else class="w-4 h-4" />
       </button>
+
+      <!-- Window controls -->
+      <div class="flex items-center ml-2" data-tauri-drag-region="false">
+        <button
+          class="h-8 w-10 flex items-center justify-center rounded hover:bg-white/5 transition-colors"
+          style="color: var(--text);"
+          @click="appWindow.minimize()"
+          title="最小化"
+        >
+          <Minus class="w-4 h-4" />
+        </button>
+        <button
+          class="h-8 w-10 flex items-center justify-center rounded hover:bg-white/5 transition-colors"
+          style="color: var(--text);"
+          @click="appWindow.toggleMaximize()"
+          title="最大化"
+        >
+          <Square class="w-3.5 h-3.5" />
+        </button>
+        <button
+          class="h-8 w-10 flex items-center justify-center rounded hover:bg-red-500/80 transition-colors"
+          style="color: var(--text);"
+          @click="appWindow.close()"
+          title="关闭"
+        >
+          <X class="w-4 h-4" />
+        </button>
+      </div>
     </div>
   </header>
 </template>
