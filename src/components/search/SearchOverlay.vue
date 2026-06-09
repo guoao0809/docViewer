@@ -102,23 +102,21 @@ function highlightSnippet(snippet: string, query: string): string {
       @click="handleOverlayClick"
     >
       <div
-        class="w-full max-w-xl rounded-lg overflow-hidden shadow-2xl"
-        style="background-color: var(--panel); border: 1px solid var(--border);"
+        class="w-full max-w-xl rounded-xl overflow-hidden shadow-2xl bg-surface border border-border"
         @click.stop
         @keydown="handleKeyDown"
       >
         <!-- Search input -->
-        <div class="flex items-center gap-2 px-4 py-3" style="border-bottom: 1px solid var(--border);">
-          <Search class="w-5 h-5 opacity-40" style="color: var(--text);" />
+        <div class="flex items-center gap-2 px-4 py-3 border-b border-border">
+          <Search class="w-5 h-5 text-text/40" />
           <input
             ref="inputRef"
             type="text"
-            class="flex-1 bg-transparent border-none outline-none text-base"
-            style="color: var(--text);"
+            class="flex-1 bg-transparent border-none outline-none text-base text-text"
             placeholder="搜索文档内容..."
             @input="handleInput"
           />
-          <button class="opacity-40 hover:opacity-100" @click="searchStore.doCloseSearch()">
+          <button class="text-text/40 hover:text-text" @click="searchStore.doCloseSearch()">
             <X class="w-4 h-4" />
           </button>
         </div>
@@ -126,8 +124,7 @@ function highlightSnippet(snippet: string, query: string): string {
         <!-- Indexing progress -->
         <div
           v-if="searchStore.isIndexing"
-          class="flex items-center gap-2 px-4 py-3 text-xs"
-          style="color: var(--text); opacity: 0.5;"
+          class="flex items-center gap-2 px-4 py-3 text-xs text-text/50"
         >
           <Loader2 class="w-3.5 h-3.5 animate-spin" />
           索引构建中 ({{ searchStore.indexProgress.current }}/{{ searchStore.indexProgress.total }})...
@@ -138,21 +135,21 @@ function highlightSnippet(snippet: string, query: string): string {
           <div class="py-1">
             <div
               v-for="(result, index) in searchStore.results" :key="result.docId"
-              class="flex flex-col gap-0.5 px-4 py-2.5 cursor-pointer"
-              :style="{
-                backgroundColor: index === selectedIndex ? 'var(--active-bg)' : 'transparent',
-                color: 'var(--text)',
+              class="flex flex-col gap-0.5 px-4 py-2.5 cursor-pointer rounded-md mx-1"
+              :class="{
+                'bg-active': index === selectedIndex,
+                'hover:bg-hover': index !== selectedIndex,
               }"
               @click="handleSelect(result)"
               @mouseenter="selectedIndex = index"
             >
               <div class="flex items-center gap-2">
-                <FileText class="w-4 h-4 shrink-0 opacity-50" />
-                <span class="text-sm truncate" style="color: var(--title);">{{ result.fileName }}</span>
-                <CornerDownLeft v-if="index === selectedIndex" class="w-3.5 h-3.5 opacity-30 shrink-0 ml-auto" />
+                <FileText class="w-4 h-4 shrink-0 text-text/50" />
+                <span class="text-sm truncate text-title">{{ result.fileName }}</span>
+                <CornerDownLeft v-if="index === selectedIndex" class="w-3.5 h-3.5 text-text/30 shrink-0 ml-auto" />
               </div>
-              <div v-if="result.snippet" class="text-xs truncate pl-6" style="opacity: 0.7;" v-html="highlightSnippet(result.snippet, searchStore.query)" />
-              <div v-if="result.line > 0" class="text-xs opacity-30 pl-6">
+              <div v-if="result.snippet" class="text-xs truncate pl-6 text-text/70" v-html="highlightSnippet(result.snippet, searchStore.query)" />
+              <div v-if="result.line > 0" class="text-xs text-text/30 pl-6">
                 Line {{ result.line }}
               </div>
             </div>
@@ -164,19 +161,18 @@ function highlightSnippet(snippet: string, query: string): string {
           v-if="searchStore.query && !searchStore.isSearching && !searchStore.isIndexing && searchStore.results.length === 0"
           class="px-4 py-6 text-center"
         >
-          <span class="text-sm" style="color: var(--text); opacity: 0.4;">未找到匹配的文档</span>
+          <span class="text-sm text-text/40">未找到匹配的文档</span>
         </div>
 
         <!-- Search history -->
-        <div v-if="!searchStore.query && searchStore.searchHistory.length > 0" style="border-top: 1px solid var(--border);">
-          <div class="px-4 py-1.5 text-xs" style="color: var(--text); opacity: 0.4;">最近搜索</div>
+        <div v-if="!searchStore.query && searchStore.searchHistory.length > 0" class="border-t border-border">
+          <div class="px-4 py-1.5 text-xs text-text/40">最近搜索</div>
           <div
             v-for="(item, index) in searchStore.searchHistory.slice(0, 5)" :key="index"
-            class="flex items-center gap-2 px-4 py-1.5 cursor-pointer hover:opacity-80 text-sm"
-            style="color: var(--text);"
+            class="flex items-center gap-2 px-4 py-1.5 cursor-pointer hover:bg-hover text-sm text-text rounded-md mx-1"
             @click="handleInput({ target: { value: item } } as any)"
           >
-            <Clock class="w-3.5 h-3.5 opacity-40" />
+            <Clock class="w-3.5 h-3.5 text-text/40" />
             {{ item }}
           </div>
         </div>
