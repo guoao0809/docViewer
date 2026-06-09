@@ -17,6 +17,7 @@
     "core:window:allow-set-resizable",
     "core:window:allow-set-skip-taskbar",
     "core:window:allow-set-always-on-top",
+    "core:window:allow-start-dragging",
     "core:event:allow-emit",
     "core:event:allow-listen",
     "fs:allow-read",
