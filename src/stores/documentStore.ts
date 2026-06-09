@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import type { DocMeta, DocContent } from '@/types/document'
 import { scanDirectory, readDocument, getFileMetadata } from '@/services/tauriService'
 import { parseMarkdown } from '@/services/markdownService'
+import { useSearchStore } from './searchStore'
 
 const STORAGE_KEY = 'docviewer-state'
 
@@ -87,6 +88,9 @@ export const useDocumentStore = defineStore('document', () => {
       mergePersistedIntoTree(tree, persisted)
       docTree.value = tree
       persistState()
+      // Trigger full-text index build (fire-and-forget, don't await)
+      const searchStore = useSearchStore()
+      searchStore.doBuildIndex()
     } finally {
       isLoading.value = false
     }
