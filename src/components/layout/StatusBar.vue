@@ -29,12 +29,17 @@ const stats = computed(() => {
 
 <template>
   <footer
-    class="flex items-center justify-between h-6 px-3 text-xs select-none shrink-0"
-    style="background-color: var(--primary); color: #fff; opacity: 0.9;"
+    class="flex items-center justify-between h-7 px-4 text-xs select-none shrink-0 bg-bg border-t border-border text-text/60"
   >
     <span>总计: {{ stats?.totalDocs ?? 0 }} 个文档</span>
-    <span v-if="stats">
-      字数: {{ stats.wordCount }} | 行数: {{ stats.lineCount }} | 大小: {{ stats.size }} | 修改时间: {{ stats.modified }}
+    <span v-if="stats" class="space-x-2">
+      <span>字数: {{ stats.wordCount.toLocaleString() }}</span>
+      <span>|</span>
+      <span>行数: {{ stats.lineCount }}</span>
+      <span>|</span>
+      <span>大小: {{ stats.size }}</span>
+      <span>|</span>
+      <span>修改时间: {{ stats.modified }}</span>
     </span>
   </footer>
 </template>
