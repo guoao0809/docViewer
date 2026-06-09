@@ -93,7 +93,7 @@ export const useDocumentStore = defineStore('document', () => {
       const persisted = getPersistedDocMetaMap()
       mergePersistedIntoTree(tree, persisted)
       // Wrap in a root node so the selected folder appears as the tree root
-      const rootName = path.split('/').pop() || path.split('\\').pop() || path
+      const rootName = path.replaceAll('\\', '/').split('/').pop() || path
       const rootNode: DocMeta = {
         id: path,
         name: rootName,
