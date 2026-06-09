@@ -4,6 +4,7 @@ import { useDocumentStore } from '@/stores/documentStore'
 import { useSearchStore } from '@/stores/searchStore'
 import { openFileDialog } from '@/services/tauriService'
 import { FileText, Edit3, Copy, MoreHorizontal } from 'lucide-vue-next'
+import { Button } from '@/components/ui/button'
 
 const documentStore = useDocumentStore()
 const searchStore = useSearchStore()
@@ -76,31 +77,31 @@ function handleContentClick() {
 
 <template>
   <!-- Empty state -->
-  <div v-if="!documentStore.currentDoc" class="h-full flex flex-col items-center justify-center" style="background-color: var(--bg);">
-    <FileText class="w-16 h-16 mb-4" style="color: var(--text); opacity: 0.1;" />
-    <p class="text-lg mb-2" style="color: var(--title); opacity: 0.5;">打开一个文档</p>
-    <p class="text-sm mb-5" style="color: var(--text); opacity: 0.3;">从左侧文件夹或中间文档列表选择</p>
-    <button class="flex items-center gap-2 px-4 py-2 rounded text-sm text-white transition-colors" style="background-color: var(--primary);" @click="handleOpenFolder">
+  <div v-if="!documentStore.currentDoc" class="h-full flex flex-col items-center justify-center bg-bg">
+    <FileText class="w-16 h-16 mb-4 text-text/15" />
+    <p class="text-lg mb-2 text-title/50">打开一个文档</p>
+    <p class="text-sm mb-5 text-text/30">从左侧文件夹或中间文档列表选择</p>
+    <Button class="bg-primary text-white hover:bg-primary/90" @click="handleOpenFolder">
       选择文件夹
-    </button>
+    </Button>
   </div>
 
   <!-- Content -->
-  <div v-else class="h-full flex flex-col" style="background-color: var(--bg);">
+  <div v-else class="h-full flex flex-col bg-bg">
     <!-- Title bar -->
-    <div class="flex items-center gap-3 px-6 h-12 shrink-0" style="border-bottom: 1px solid var(--border);">
-      <span class="text-base font-semibold truncate flex-1" style="color: var(--title);">
+    <div class="flex items-center gap-3 px-6 h-12 shrink-0 border-b border-border">
+      <span class="text-base font-semibold truncate flex-1 text-title">
         {{ documentStore.currentDoc.meta.name }}
       </span>
-      <button class="h-8 w-8 flex items-center justify-center rounded hover:bg-white/5 transition-colors" title="编辑">
-        <Edit3 class="w-4 h-4" style="opacity: 0.5;" />
-      </button>
-      <button class="h-8 w-8 flex items-center justify-center rounded hover:bg-white/5 transition-colors" title="复制">
-        <Copy class="w-4 h-4" style="opacity: 0.5;" />
-      </button>
-      <button class="h-8 w-8 flex items-center justify-center rounded hover:bg-white/5 transition-colors" title="更多">
-        <MoreHorizontal class="w-4 h-4" style="opacity: 0.5;" />
-      </button>
+      <Button variant="ghost" size="icon" class="text-text/50 hover:bg-hover" title="编辑">
+        <Edit3 class="w-4 h-4" />
+      </Button>
+      <Button variant="ghost" size="icon" class="text-text/50 hover:bg-hover" title="复制">
+        <Copy class="w-4 h-4" />
+      </Button>
+      <Button variant="ghost" size="icon" class="text-text/50 hover:bg-hover" title="更多">
+        <MoreHorizontal class="w-4 h-4" />
+      </Button>
     </div>
 
     <!-- Content scroll -->
