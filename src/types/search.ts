@@ -4,4 +4,6 @@ export interface SearchResult {
   snippet: string
   score: number
   line: number
+  matchText: string
+  terms: string[]
 }
