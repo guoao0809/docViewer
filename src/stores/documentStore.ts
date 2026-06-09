@@ -90,16 +90,14 @@ export const useDocumentStore = defineStore('document', () => {
   }
 
   async function doScanDirectory(path: string) {
-    // Skip if this folder is already loaded or being loaded
-    if (docTree.value.some(d => d.id === path) || rootPaths.value.includes(path)) return
+    // Skip if this folder is already in the tree (but NOT if rootPaths has it from persistence)
+    if (docTree.value.some(d => d.id === path)) return
 
     isLoading.value = true
     try {
       const tree = await scanDirectory(path)
-      // Merge persisted favorite/lastOpen/visitCount data into new tree
       const persisted = getPersistedDocMetaMap()
       mergePersistedIntoTree(tree, persisted)
-      // Wrap in a root node so the selected folder appears as the tree root
       const rootName = path.replaceAll('\\', '/').split('/').pop() || path
       const rootNode: DocMeta = {
         id: path,
@@ -115,7 +113,9 @@ export const useDocumentStore = defineStore('document', () => {
         children: tree,
       }
       docTree.value = [...docTree.value, rootNode]
-      rootPaths.value = [...rootPaths.value, path]
+      if (!rootPaths.value.includes(path)) {
+        rootPaths.value = [...rootPaths.value, path]
+      }
       // Auto-expand the root folder
       expandedDirs.value.add(path)
       persistState()
