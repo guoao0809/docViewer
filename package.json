@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "tauri": "tauri" 
+    "tauri": "tauri"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +27,7 @@
     "lucide-vue-next": "^1.0.0",
     "markdown-it": "^14.2.0",
     "markdown-it-anchor": "^9.2.0",
+    "minisearch": "^7.2.0",
     "pinia": "^3.0.4",
     "reka-ui": "^2.9.9",
     "shiki": "^4.2.0",
