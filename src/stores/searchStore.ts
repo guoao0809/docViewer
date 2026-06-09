@@ -1,9 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { SearchResult } from '@/types/search'
-import { searchDocuments, getSearchHistory, addSearchHistory } from '@/services/searchService'
-import { useDocumentStore } from './documentStore'
-import type { DocMeta } from '@/types/document'
+import { searchIndex } from '@/services/searchService'
 
 export const useSearchStore = defineStore('search', () => {
   const query = ref('')
@@ -12,22 +10,11 @@ export const useSearchStore = defineStore('search', () => {
   const searchHistory = ref<string[]>(getSearchHistory())
   const isOpen = ref(false)
 
-  function flattenDocs(docs: DocMeta[]): DocMeta[] {
-    const result: DocMeta[] = []
-    for (const doc of docs) {
-      if (!doc.children) result.push(doc)
-      if (doc.children) result.push(...flattenDocs(doc.children))
-    }
-    return result
-  }
-
   function doSearch(q: string) {
     query.value = q
     if (!q.trim()) { results.value = []; isSearching.value = false; return }
     isSearching.value = true
-    const docStore = useDocumentStore()
-    const allDocs = flattenDocs(docStore.docTree)
-    results.value = searchDocuments(q, allDocs)
+    results.value = searchIndex(q)
     isSearching.value = false
   }
 
@@ -41,3 +28,21 @@ export const useSearchStore = defineStore('search', () => {
 
   return { query, results, isSearching, searchHistory, isOpen, doSearch, doAddToHistory, doOpenSearch, doCloseSearch }
 })
+
+function getSearchHistory(): string[] {
+  try {
+    const stored = localStorage.getItem('docviewer-search-history')
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
+function addSearchHistory(q: string): void {
+  if (!q.trim()) return
+  const history = getSearchHistory()
+  const filtered = history.filter(h => h !== q)
+  filtered.unshift(q)
+  const trimmed = filtered.slice(0, 20)
+  localStorage.setItem('docviewer-search-history', JSON.stringify(trimmed))
+}
