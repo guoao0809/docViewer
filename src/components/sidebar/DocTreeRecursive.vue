@@ -23,7 +23,6 @@ function handleClick(doc: DocMeta) {
   }
 }
 
-// Only show remove button on root-level folder nodes
 const isRoot = computed(() => props.depth === 0 && props.doc.children)
 
 function handleRemove(event: Event) {
@@ -35,33 +34,30 @@ function handleRemove(event: Event) {
 <template>
   <div>
     <div
-      class="flex items-center gap-1.5 cursor-pointer text-sm transition-colors group"
+      class="flex items-center gap-1.5 cursor-pointer text-sm transition-colors rounded-md group"
       :data-docid="doc.id"
-      :style="{
-        paddingLeft: (depth * 16 + 16) + 'px',
-        backgroundColor: isActive(doc.id) ? 'var(--active-bg)' : 'transparent',
-        color: isActive(doc.id) ? 'var(--title)' : 'var(--text)',
-        lineHeight: '22px',
+      :class="{
+        'bg-active text-title': isActive(doc.id),
+        'text-text hover:bg-hover': !isActive(doc.id),
       }"
+      :style="{ paddingLeft: (depth * 16 + 8) + 'px' }"
       @click="handleClick(doc)"
-      @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = 'var(--hover-bg)'"
-      @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = isActive(doc.id) ? 'var(--active-bg)' : 'transparent'"
     >
       <template v-if="doc.children">
-        <ChevronDown v-if="isExpanded(doc.id) || shouldAutoExpand" class="w-3.5 h-3.5 shrink-0" />
-        <ChevronRight v-else class="w-3.5 h-3.5 shrink-0" />
-        <FolderOpen v-if="isExpanded(doc.id) || shouldAutoExpand" class="w-4 h-4 shrink-0" style="color: #e8a44a;" />
-        <Folder v-else class="w-4 h-4 shrink-0" style="color: #e8a44a;" />
+        <ChevronDown v-if="isExpanded(doc.id) || shouldAutoExpand" class="w-3.5 h-3.5 shrink-0 text-text/40" />
+        <ChevronRight v-else class="w-3.5 h-3.5 shrink-0 text-text/40" />
+        <FolderOpen v-if="isExpanded(doc.id) || shouldAutoExpand" class="w-4 h-4 shrink-0 text-amber-500" />
+        <Folder v-else class="w-4 h-4 shrink-0 text-amber-500" />
       </template>
-      <FileText v-else class="w-4 h-4 shrink-0" style="opacity: 0.5;" />
+      <FileText v-else class="w-4 h-4 shrink-0 text-text/50" />
       <span class="truncate">{{ doc.name }}</span>
       <button
         v-if="isRoot"
-        class="ml-auto h-5 w-5 flex items-center justify-center rounded hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+        class="ml-auto h-5 w-5 flex items-center justify-center rounded hover:bg-hover opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
         @click="handleRemove"
         title="移除文件夹"
       >
-        <X class="w-3 h-3" style="opacity: 0.5;" />
+        <X class="w-3 h-3 text-text/50" />
       </button>
     </div>
     <template v-if="doc.children && (isExpanded(doc.id) || shouldAutoExpand)">
