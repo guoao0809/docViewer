@@ -31,20 +31,20 @@ function handleToggleTheme() { settingStore.doToggleTheme() }
       <div
         class="w-7 h-7 rounded-md flex items-center justify-center bg-primary"
       >
-        <span class="text-white text-sm font-bold">D</span>
+        <span class="text-white text-base font-bold">D</span>
       </div>
-      <span class="text-sm font-semibold tracking-wide text-title">DocViewer</span>
+      <span class="text-base font-semibold tracking-wide text-title">DocViewer</span>
     </div>
 
     <!-- 中间: 搜索入口 -->
     <div class="flex-1 max-w-2xl mx-6 cursor-pointer" @click="handleSearchClick">
       <div
-        class="flex items-center gap-2 h-9 px-4 rounded-lg text-sm bg-bg border border-border text-text"
+        class="flex items-center gap-2 h-9 px-4 rounded-lg text-base bg-bg border border-border text-text"
       >
         <Search class="w-4 h-4 shrink-0 opacity-50" />
         <span class="opacity-50">搜索文档...</span>
         <kbd
-          class="ml-auto text-xs px-2 py-0.5 rounded bg-panel border border-border opacity-40 font-mono"
+          class="ml-auto text-sm px-2 py-0.5 rounded bg-panel border border-border opacity-40 font-mono"
         >Ctrl+K</kbd>
       </div>
     </div>

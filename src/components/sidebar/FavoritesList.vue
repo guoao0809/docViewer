@@ -26,7 +26,7 @@ function openDoc(doc: DocMeta) {
 <template>
   <div v-if="favorites.length > 0" class="border-b border-border">
     <div
-      class="flex items-center gap-1 px-4 h-7 cursor-pointer text-xs font-semibold uppercase tracking-wider text-text/70"
+      class="flex items-center gap-1 px-4 h-8 cursor-pointer text-sm font-semibold tracking-wider text-text/70"
       @click="collapsed = !collapsed"
     >
       <ChevronDown v-if="!collapsed" class="w-3.5 h-3.5 shrink-0" />

@@ -124,7 +124,7 @@ function highlightSnippet(snippet: string, query: string): string {
         <!-- Indexing progress -->
         <div
           v-if="searchStore.isIndexing"
-          class="flex items-center gap-2 px-4 py-3 text-xs text-text/50"
+          class="flex items-center gap-2 px-4 py-3 text-sm text-text/50"
         >
           <Loader2 class="w-3.5 h-3.5 animate-spin" />
           索引构建中 ({{ searchStore.indexProgress.current }}/{{ searchStore.indexProgress.total }})...
@@ -145,10 +145,10 @@ function highlightSnippet(snippet: string, query: string): string {
             >
               <div class="flex items-center gap-2">
                 <FileText class="w-4 h-4 shrink-0 text-text/50" />
-                <span class="text-sm truncate text-title">{{ result.fileName }}</span>
+                <span class="text-base truncate text-title">{{ result.fileName }}</span>
                 <CornerDownLeft v-if="index === selectedIndex" class="w-3.5 h-3.5 text-text/30 shrink-0 ml-auto" />
               </div>
-              <div v-if="result.snippet" class="text-xs truncate pl-6 text-text/70" v-html="highlightSnippet(result.snippet, searchStore.query)" />
+              <div v-if="result.snippet" class="text-sm truncate pl-6 text-text/70" v-html="highlightSnippet(result.snippet, searchStore.query)" />
               <div v-if="result.line > 0" class="text-xs text-text/30 pl-6">
                 Line {{ result.line }}
               </div>
@@ -165,15 +165,29 @@ function highlightSnippet(snippet: string, query: string): string {
         </div>
 
         <!-- Search history -->
-        <div v-if="!searchStore.query && searchStore.searchHistory.length > 0" class="border-t border-border">
-          <div class="px-4 py-1.5 text-xs text-text/40">最近搜索</div>
+        <div v-if="(!searchStore.query || searchStore.showHistory) && searchStore.searchHistory.length > 0" class="border-t border-border">
+          <div class="flex items-center justify-between px-4 py-1.5">
+            <span class="text-sm text-text/40">最近搜索</span>
+            <button
+              class="text-sm text-text/40 hover:text-text transition-colors"
+              @click="searchStore.doClearHistory()"
+            >
+              清空历史
+            </button>
+          </div>
           <div
-            v-for="(item, index) in searchStore.searchHistory.slice(0, 5)" :key="index"
-            class="flex items-center gap-2 px-4 py-1.5 cursor-pointer hover:bg-hover text-sm text-text rounded-md mx-1"
+            v-for="(item, index) in searchStore.searchHistory.slice(0, 10)" :key="index"
+            class="group flex items-center gap-2 px-4 py-1.5 cursor-pointer hover:bg-hover text-sm text-text rounded-md mx-1"
             @click="handleInput({ target: { value: item } } as any)"
           >
-            <Clock class="w-3.5 h-3.5 text-text/40" />
-            {{ item }}
+            <Clock class="w-3.5 h-3.5 text-text/40 shrink-0" />
+            <span class="flex-1 truncate">{{ item }}</span>
+            <button
+              class="opacity-0 group-hover:opacity-100 text-text/40 hover:text-text transition-opacity"
+              @click.stop="searchStore.doRemoveFromHistory(item)"
+            >
+              <X class="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       </div>

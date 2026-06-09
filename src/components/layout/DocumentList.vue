@@ -4,6 +4,10 @@ import { Star, X } from 'lucide-vue-next'
 
 const documentStore = useDocumentStore()
 
+const props = defineProps<{
+  activeNav: string
+}>()
+
 interface FileTypeBadge {
   letter: string
   bgColor: string
@@ -61,80 +65,158 @@ function handleToggleStar(event: Event, docId: string) {
 
 <template>
   <aside
-    class="flex flex-col overflow-hidden border-r border-border bg-surface"
+    class="flex flex-col overflow-hidden border-r border-border"
   >
-    <!-- Header -->
-    <div
-      class="flex items-center justify-between px-4 h-10 shrink-0 border-b border-border"
-    >
-      <div class="flex items-center gap-2">
-        <span class="text-sm font-semibold text-title">全部文档</span>
-        <span class="text-xs rounded-full px-1.5 py-0.5 bg-panel text-text/60">
-          共 {{ documentStore.openedDocs.length }} 个文档
+    <!-- Favorites mode -->
+    <template v-if="props.activeNav === 'favorites'">
+      <!-- Header -->
+      <div
+        class="flex items-center justify-between px-4 h-10 shrink-0 border-b border-border"
+      >
+        <div class="flex items-center gap-2">
+          <span class="text-base font-semibold text-title">收藏夹</span>
+          <span class="text-base rounded-full px-2 py-0.5 bg-panel text-text/60">
+            共 {{ documentStore.favoriteDocs.length }} 个文档
+          </span>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div
+        v-if="documentStore.favoriteDocs.length === 0"
+        class="flex-1 flex items-center justify-center p-4"
+      >
+        <span class="text-sm text-text/30">
+          点击文档旁的星标收藏
         </span>
       </div>
-    </div>
 
-    <!-- Empty state -->
-    <div
-      v-if="documentStore.openedDocs.length === 0"
-      class="flex-1 flex items-center justify-center p-4"
-    >
-      <span class="text-xs text-text/30">
-        从左侧文件夹选择文档
-      </span>
-    </div>
-
-    <!-- Document list -->
-    <div v-else class="flex-1 overflow-y-auto">
-      <div
-        v-for="doc in documentStore.openedDocs"
-        :key="doc.id"
-        class="flex items-center gap-3 px-4 py-3 cursor-pointer border-b border-border group transition-colors"
-        :class="{
-          'bg-active': doc.id === documentStore.activeDocId,
-          'hover:bg-hover': doc.id !== documentStore.activeDocId,
-        }"
-        @click="handleClick(doc)"
-      >
-        <!-- File type badge -->
+      <!-- Favorites list -->
+      <div v-else class="flex-1 overflow-y-auto">
         <div
-          class="w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold text-white shrink-0"
-          :class="getFileTypeBadge(doc.type, doc.name).bgColor"
+          v-for="doc in documentStore.favoriteDocs"
+          :key="doc.id"
+          class="flex items-center gap-3 px-4 py-3 cursor-pointer border-b border-border group transition-colors"
+          :class="{
+            'bg-active': doc.id === documentStore.activeDocId,
+            'hover:bg-hover': doc.id !== documentStore.activeDocId,
+          }"
+          @click="handleClick(doc)"
         >
-          {{ getFileTypeBadge(doc.type, doc.name).letter }}
-        </div>
-
-        <!-- Info -->
-        <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium truncate text-title">{{ doc.name }}</div>
-          <div class="flex items-center gap-2 text-xs text-text/50">
-            <span v-if="doc.lastOpen">{{ formatDate(doc.lastOpen) }}</span>
-            <span>{{ formatSize(doc.size) }}</span>
-            <span class="px-1.5 py-0.5 rounded text-xs bg-panel">
-              {{ documentStore.getFolderTag(doc.id) }}
-            </span>
+          <!-- File type badge -->
+          <div
+            class="w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold text-white shrink-0"
+            :class="getFileTypeBadge(doc.type, doc.name).bgColor"
+          >
+            {{ getFileTypeBadge(doc.type, doc.name).letter }}
           </div>
+
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <div class="text-base font-medium truncate text-title">{{ doc.name }}</div>
+            <div class="flex items-center gap-2 text-sm text-text/50">
+              <span>{{ formatSize(doc.size) }}</span>
+              <span class="px-1.5 py-0.5 rounded text-sm bg-panel">
+                {{ documentStore.getFolderTag(doc.id) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <button
+            class="shrink-0 h-6 w-6 flex items-center justify-center rounded transition-colors text-amber-400"
+            @click="handleToggleStar($event, doc.id)"
+            title="取消收藏"
+          >
+            <Star class="w-4 h-4 fill-current" />
+          </button>
+
+          <button
+            class="shrink-0 h-6 w-6 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity text-text/50 hover:text-text"
+            @click="handleRemove($event, doc.id)"
+            title="移除"
+          >
+            <X class="w-4 h-4" />
+          </button>
         </div>
-
-        <!-- Actions -->
-        <button
-          class="shrink-0 h-6 w-6 flex items-center justify-center rounded transition-colors"
-          :class="doc.favorite ? 'text-amber-400' : 'text-text/20 opacity-0 group-hover:opacity-100'"
-          @click="handleToggleStar($event, doc.id)"
-          title="收藏"
-        >
-          <Star class="w-4 h-4" :class="doc.favorite ? 'fill-current' : ''" />
-        </button>
-
-        <button
-          class="shrink-0 h-6 w-6 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity text-text/50 hover:text-text"
-          @click="handleRemove($event, doc.id)"
-          title="移除"
-        >
-          <X class="w-4 h-4" />
-        </button>
       </div>
-    </div>
+    </template>
+
+    <!-- All docs mode (recent opened) -->
+    <template v-else>
+      <!-- Header -->
+      <div
+        class="flex items-center justify-between px-4 h-10 shrink-0 border-b border-border"
+      >
+        <div class="flex items-center gap-2">
+          <span class="text-base font-semibold text-title">最近打开</span>
+          <span class="text-base rounded-full px-2 py-0.5 bg-panel text-text/60">
+            共 {{ documentStore.openedDocs.length }} 个文档
+          </span>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div
+        v-if="documentStore.openedDocs.length === 0"
+        class="flex-1 flex items-center justify-center p-4"
+      >
+        <span class="text-sm text-text/30">
+          从左侧文件夹选择文档
+        </span>
+      </div>
+
+      <!-- Document list -->
+      <div v-else class="flex-1 overflow-y-auto">
+        <div
+          v-for="doc in documentStore.openedDocs"
+          :key="doc.id"
+          class="flex items-center gap-3 px-4 py-3 cursor-pointer border-b border-border group transition-colors"
+          :class="{
+            'bg-active': doc.id === documentStore.activeDocId,
+            'hover:bg-hover': doc.id !== documentStore.activeDocId,
+          }"
+          @click="handleClick(doc)"
+        >
+          <!-- File type badge -->
+          <div
+            class="w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold text-white shrink-0"
+            :class="getFileTypeBadge(doc.type, doc.name).bgColor"
+          >
+            {{ getFileTypeBadge(doc.type, doc.name).letter }}
+          </div>
+
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <div class="text-base font-medium truncate text-title">{{ doc.name }}</div>
+            <div class="flex items-center gap-2 text-sm text-text/50">
+              <span v-if="doc.lastOpen">{{ formatDate(doc.lastOpen) }}</span>
+              <span>{{ formatSize(doc.size) }}</span>
+              <span class="px-1.5 py-0.5 rounded text-sm bg-panel">
+                {{ documentStore.getFolderTag(doc.id) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <button
+            class="shrink-0 h-6 w-6 flex items-center justify-center rounded transition-colors"
+            :class="doc.favorite ? 'text-amber-400' : 'text-text/20 opacity-0 group-hover:opacity-100'"
+            @click="handleToggleStar($event, doc.id)"
+            title="收藏"
+          >
+            <Star class="w-4 h-4" :class="doc.favorite ? 'fill-current' : ''" />
+          </button>
+
+          <button
+            class="shrink-0 h-6 w-6 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity text-text/50 hover:text-text"
+            @click="handleRemove($event, doc.id)"
+            title="移除"
+          >
+            <X class="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </template>
   </aside>
 </template>

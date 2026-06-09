@@ -55,21 +55,21 @@ async function handleDrop(event: DragEvent) {
     </div>
 
     <h1 class="text-2xl font-bold mb-1 text-title">DocViewer</h1>
-    <p class="text-sm mb-6 text-text/40">面向开发者的本地知识库</p>
+    <p class="text-base mb-6 text-text/40">面向开发者的本地知识库</p>
 
-    <p class="text-base mb-4 text-center" :class="isDragging ? 'text-text/80' : 'text-text/50'">
+    <p class="text-lg mb-4 text-center" :class="isDragging ? 'text-text/80' : 'text-text/50'">
       {{ isDragging ? '释放以打开文件夹' : '拖拽 Markdown 文件夹到此处' }}
     </p>
-    <p v-if="!isDragging" class="text-sm mb-6 text-center text-text/30">
+    <p v-if="!isDragging" class="text-base mb-6 text-center text-text/30">
       或点击按钮选择文件夹
     </p>
 
-    <Button class="bg-primary text-white hover:bg-primary/90 px-6 py-2.5" @click="handleOpenFolder">
+    <Button class="bg-primary text-white hover:bg-primary/90 px-6 py-2.5 text-base" @click="handleOpenFolder">
       <FolderOpen class="w-5 h-5" />
       选择文件夹
     </Button>
 
-    <div class="mt-10 flex gap-6 text-xs text-text/25">
+    <div class="mt-10 flex gap-6 text-sm text-text/25">
       <span><kbd class="bg-panel border border-border rounded px-1.5 py-0.5">Ctrl+K</kbd> 搜索</span>
       <span><kbd class="bg-panel border border-border rounded px-1.5 py-0.5">Ctrl+D</kbd> 收藏</span>
       <span><kbd class="bg-panel border border-border rounded px-1.5 py-0.5">Ctrl+W</kbd> 关闭</span>

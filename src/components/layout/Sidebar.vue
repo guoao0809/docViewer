@@ -1,36 +1,42 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { watch } from 'vue'
 import DocTree from '@/components/sidebar/DocTree.vue'
 import { useDocumentStore } from '@/stores/documentStore'
 import { useSearchStore } from '@/stores/searchStore'
 import { openFileDialog } from '@/services/tauriService'
-import { FolderPlus, Clock, Star, FileText, Search, Settings } from 'lucide-vue-next'
+import { FolderPlus, Star, FileText, Search, Settings } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
+
+defineProps<{
+  activeNav: string
+}>()
+
+const emit = defineEmits<{
+  navChange: [key: string]
+}>()
 
 const documentStore = useDocumentStore()
 const searchStore = useSearchStore()
 
 const navItems = [
-  { key: 'recent',   icon: Clock,     label: '最近打开' },
-  { key: 'favorites',icon: Star,      label: '收藏夹' },
-  { key: 'all',      icon: FileText,  label: '全部文档' },
-  { key: 'history',  icon: Search,    label: '搜索历史' },
+  { key: 'favorites', icon: Star,      label: '收藏夹' },
+  { key: 'all',       icon: FileText,  label: '全部文档' },
+  { key: 'history',   icon: Search,    label: '搜索历史' },
 ]
-
-const activeNav = computed(() => 'all')
 
 async function handleAddFolder() {
   const folder = await openFileDialog()
   if (folder) await documentStore.doScanDirectory(folder)
 }
 
-function handleNavClick(_key: string) {
-  // Future: filter document list by category
+function handleNavClick(key: string) {
+  emit('navChange', key)
 }
 
-function handleSearchHistory() {
-  searchStore.doOpenSearch()
-}
+// 点击文件后自动切换到「最近打开」
+watch(() => documentStore.currentDoc, () => {
+  if (emit) emit('navChange', 'all')
+})
 </script>
 
 <template>
@@ -51,12 +57,12 @@ function handleSearchHistory() {
       <div
         v-for="item in navItems"
         :key="item.key"
-        class="flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer text-sm transition-colors"
+        class="flex items-center gap-2 px-3 py-2.5 rounded-md cursor-pointer text-base transition-colors"
         :class="{
           'bg-active text-title font-medium': activeNav === item.key,
           'text-text hover:bg-hover': activeNav !== item.key,
         }"
-        @click="item.key === 'history' ? handleSearchHistory() : handleNavClick(item.key)"
+        @click="item.key === 'history' ? searchStore.doOpenSearchWithHistory() : handleNavClick(item.key)"
       >
         <component :is="item.icon" class="w-4 h-4 shrink-0 opacity-60" />
         <span>{{ item.label }}</span>
@@ -67,7 +73,7 @@ function handleSearchHistory() {
     <div class="mx-3 my-2 border-t border-border" />
 
     <!-- Project folders section -->
-    <div class="flex items-center justify-between px-4 h-7 shrink-0 text-xs font-semibold uppercase tracking-wider text-text/60">
+    <div class="flex items-center justify-between px-4 h-8 shrink-0 text-base font-semibold tracking-wider text-text/60">
       <span>项目</span>
       <Button variant="ghost" size="icon-sm" class="h-5 w-5 text-text/60 hover:bg-hover" @click="handleAddFolder" title="添加文件夹">
         <FolderPlus class="w-3 h-3" />
@@ -80,13 +86,13 @@ function handleSearchHistory() {
     </div>
 
     <!-- Settings at bottom -->
-    <div class="border-t border-border mt-auto">
+    <!-- <div class="border-t border-border mt-auto">
       <div
-        class="flex items-center gap-2 px-4 py-2 cursor-pointer text-sm text-text/60 hover:bg-hover transition-colors"
+        class="flex items-center gap-2 px-4 py-2.5 cursor-pointer text-base text-text/60 hover:bg-hover transition-colors"
       >
         <Settings class="w-4 h-4 shrink-0" />
         <span>设置</span>
       </div>
-    </div>
+    </div> -->
   </aside>
 </template>

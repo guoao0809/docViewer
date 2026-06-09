@@ -15,6 +15,7 @@ export const useSearchStore = defineStore('search', () => {
   const isIndexing = ref(false)
   const indexProgress = ref({ current: 0, total: 0 })
   const highlightTarget = ref<{ docId: string; matchText: string } | null>(null)
+  const showHistory = ref(false)
 
   function flattenDocs(docs: DocMeta[]): DocMeta[] {
     const result: DocMeta[] = []
@@ -61,15 +62,27 @@ export const useSearchStore = defineStore('search', () => {
     searchHistory.value = getSearchHistory()
   }
 
-  function doOpenSearch() { isOpen.value = true; query.value = ''; results.value = [] }
-  function doCloseSearch() { isOpen.value = false; query.value = ''; results.value = [] }
+  function doOpenSearch() { isOpen.value = true; showHistory.value = false; query.value = ''; results.value = [] }
+  function doOpenSearchWithHistory() { isOpen.value = true; showHistory.value = true; query.value = ''; results.value = [] }
+  function doCloseSearch() { isOpen.value = false; showHistory.value = false; query.value = ''; results.value = [] }
   function doClearHighlight() { highlightTarget.value = null }
 
+  function doRemoveFromHistory(q: string) {
+    const history = getSearchHistory().filter(h => h !== q)
+    localStorage.setItem('docviewer-search-history', JSON.stringify(history))
+    searchHistory.value = history
+  }
+
+  function doClearHistory() {
+    localStorage.removeItem('docviewer-search-history')
+    searchHistory.value = []
+  }
+
   return {
-    query, results, isSearching, searchHistory, isOpen,
+    query, results, isSearching, searchHistory, isOpen, showHistory,
     isIndexing, indexProgress, highlightTarget,
-    doSearch, doAddToHistory, doOpenSearch, doCloseSearch,
-    doBuildIndex, doClearHighlight,
+    doSearch, doAddToHistory, doOpenSearch, doOpenSearchWithHistory, doCloseSearch,
+    doBuildIndex, doClearHighlight, doRemoveFromHistory, doClearHistory,
   }
 })
 

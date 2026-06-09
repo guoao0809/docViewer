@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import type { DocMeta, DocContent } from '@/types/document'
 import { scanDirectory, readDocument, getFileMetadata } from '@/services/tauriService'
 import { parseMarkdown } from '@/services/markdownService'
@@ -244,9 +244,20 @@ export const useDocumentStore = defineStore('document', () => {
     }
   }
 
+  function getAllFavoriteDocs(docs: DocMeta[]): DocMeta[] {
+    const result: DocMeta[] = []
+    for (const doc of docs) {
+      if (!doc.children && doc.favorite) result.push(doc)
+      if (doc.children) result.push(...getAllFavoriteDocs(doc.children))
+    }
+    return result
+  }
+
+  const favoriteDocs = computed(() => getAllFavoriteDocs(docTree.value))
+
   return {
     docTree, currentDoc, expandedDirs, rootPaths, isLoading,
-    openedDocs, activeDocId,
+    openedDocs, activeDocId, favoriteDocs,
     doScanDirectory, doLoadDocument, doToggleFavorite, doToggleExpanded,
     doRemoveRootFolder, doOpenDoc, doRemoveOpenedDoc, getFolderTag,
     loadPersistedState, persistState,

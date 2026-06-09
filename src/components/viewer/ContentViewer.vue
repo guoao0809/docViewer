@@ -90,7 +90,7 @@ function handleContentClick() {
   <div v-else class="h-full flex flex-col bg-bg">
     <!-- Title bar -->
     <div class="flex items-center gap-3 px-6 h-12 shrink-0 border-b border-border">
-      <span class="text-base font-semibold truncate flex-1 text-title">
+      <span class="text-lg font-semibold truncate flex-1 text-title">
         {{ documentStore.currentDoc.meta.name }}
       </span>
       <Button variant="ghost" size="icon" class="text-text/50 hover:bg-hover" title="编辑">
