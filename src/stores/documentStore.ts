@@ -81,12 +81,31 @@ export const useDocumentStore = defineStore('document', () => {
   async function doScanDirectory(path: string) {
     isLoading.value = true
     rootPath.value = path
+    // Reset expanded dirs for the new folder — start with a clean collapsed tree
+    expandedDirs.value = new Set()
     try {
       const tree = await scanDirectory(path)
       // Merge persisted favorite/lastOpen/visitCount data into new tree
       const persisted = getPersistedDocMetaMap()
       mergePersistedIntoTree(tree, persisted)
-      docTree.value = tree
+      // Wrap in a root node so the selected folder appears as the tree root
+      const rootName = path.split('/').pop() || path.split('\\').pop() || path
+      const rootNode: DocMeta = {
+        id: path,
+        name: rootName,
+        path,
+        type: 'text',
+        size: 0,
+        modified: 0,
+        favorite: false,
+        tags: [],
+        lastOpen: null,
+        visitCount: 0,
+        children: tree,
+      }
+      docTree.value = [rootNode]
+      // Auto-expand the root folder
+      expandedDirs.value.add(path)
       persistState()
       // Trigger full-text index build (fire-and-forget, don't await)
       const searchStore = useSearchStore()
