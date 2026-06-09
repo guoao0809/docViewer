@@ -1,26 +1,24 @@
 import MarkdownIt from 'markdown-it'
 import markdownItAnchor from 'markdown-it-anchor'
 import DOMPurify from 'dompurify'
+import { createHighlighter, type Highlighter } from 'shiki'
 import type { DocContent, TocItem, DocMeta } from '@/types/document'
 
-let md: MarkdownIt | null = null
+let highlighter: Highlighter | null = null
 
-function getMarkdownIt(): MarkdownIt {
-  if (!md) {
-    md = new MarkdownIt({
-      html: true,
-      breaks: true,
-      linkify: true,
-      typographer: true,
-    })
+const SHIKI_LANGS = [
+  'javascript', 'typescript', 'rust', 'python', 'go', 'html', 'css', 'json',
+  'bash', 'markdown', 'yaml', 'toml', 'xml', 'sql', 'cpp', 'java', 'vue',
+]
 
-    md.use(markdownItAnchor, {
-      permalink: true,
-      permalinkBefore: true,
-      permalinkSymbol: '#',
+async function getHighlighter(): Promise<Highlighter> {
+  if (!highlighter) {
+    highlighter = await createHighlighter({
+      themes: ['vitesse-dark', 'vitesse-light'],
+      langs: SHIKI_LANGS,
     })
   }
-  return md
+  return highlighter
 }
 
 function slugify(text: string): string {
@@ -61,10 +59,37 @@ function extractToc(raw: string): TocItem[] {
   return headings
 }
 
-export function parseMarkdown(raw: string, meta: DocMeta): DocContent {
-  const md = getMarkdownIt()
+export async function parseMarkdown(raw: string, meta: DocMeta): Promise<DocContent> {
+  const h = await getHighlighter()
+  const loadedLangs = h.getLoadedLanguages()
+
+  const md = new MarkdownIt({
+    html: true,
+    breaks: true,
+    linkify: true,
+    typographer: true,
+    highlight(code: string, lang: string): string {
+      const normalizedLang = lang || 'text'
+      const effectiveLang = loadedLangs.includes(normalizedLang) ? normalizedLang : 'text'
+      try {
+        return h.codeToHtml(code, { lang: effectiveLang, theme: 'vitesse-dark' })
+      } catch {
+        return `<pre><code>${MarkdownIt().utils.escapeHtml(code)}</code></pre>`
+      }
+    },
+  })
+
+  md.use(markdownItAnchor, {
+    permalink: true,
+    permalinkBefore: true,
+    permalinkSymbol: '#',
+  })
+
   const rawHtml = md.render(raw)
-  const html = DOMPurify.sanitize(rawHtml)
+  const html = DOMPurify.sanitize(rawHtml, {
+    ADD_TAGS: ['span'],
+    ADD_ATTR: ['style', 'class'],
+  })
   const toc = extractToc(raw)
 
   return { meta, raw, html, toc }

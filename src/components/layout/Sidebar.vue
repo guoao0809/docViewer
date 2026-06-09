@@ -98,7 +98,7 @@ async function handleOpenFolder() {
             <FolderPlus class="w-3 h-3" />
           </button>
         </div>
-        <DocTree v-show="!isCollapsed('documents')" />
+        <DocTree v-show="!isCollapsed('documents')" :filter="searchFilter" />
       </div>
     </div>
   </aside>
