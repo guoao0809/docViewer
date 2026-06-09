@@ -1,11 +1,30 @@
 <script setup lang="ts">
 import { useDocumentStore } from '@/stores/documentStore'
-import { FileText, FileCode, Star, X } from 'lucide-vue-next'
+import { Star, X } from 'lucide-vue-next'
 
 const documentStore = useDocumentStore()
 
-function getFileIcon(type: string) {
-  return type === 'markdown' ? FileText : FileCode
+interface FileTypeBadge {
+  letter: string
+  bgColor: string
+}
+
+function getFileTypeBadge(type: string, name: string): FileTypeBadge {
+  const ext = name.split('.').pop()?.toLowerCase() || ''
+
+  switch (ext) {
+    case 'md':
+    case 'markdown':
+      return { letter: 'M↓', bgColor: 'bg-blue-500' }
+    case 'json':
+      return { letter: 'J', bgColor: 'bg-yellow-500' }
+    case 'pdf':
+      return { letter: 'PDF', bgColor: 'bg-red-500' }
+    case 'sketch':
+      return { letter: 'SK', bgColor: 'bg-gray-400' }
+    default:
+      return { letter: ext.slice(0, 3).toUpperCase(), bgColor: 'bg-green-500' }
+  }
 }
 
 function formatDate(ts: number | null): string {
@@ -42,17 +61,15 @@ function handleToggleStar(event: Event, docId: string) {
 
 <template>
   <aside
-    class="flex flex-col overflow-hidden border-r"
-    style="background-color: var(--sidebar); border-color: var(--border);"
+    class="flex flex-col overflow-hidden border-r border-border bg-surface"
   >
     <!-- Header -->
     <div
-      class="flex items-center justify-between px-4 h-10 shrink-0"
-      style="border-bottom: 1px solid var(--border);"
+      class="flex items-center justify-between px-4 h-10 shrink-0 border-b border-border"
     >
       <div class="flex items-center gap-2">
-        <span class="text-sm font-semibold" style="color: var(--title);">全部文档</span>
-        <span class="text-xs rounded-full px-1.5 py-0.5" style="background-color: var(--panel); color: var(--text); opacity: 0.6;">
+        <span class="text-sm font-semibold text-title">全部文档</span>
+        <span class="text-xs rounded-full px-1.5 py-0.5 bg-panel text-text/60">
           共 {{ documentStore.openedDocs.length }} 个文档
         </span>
       </div>
@@ -63,7 +80,7 @@ function handleToggleStar(event: Event, docId: string) {
       v-if="documentStore.openedDocs.length === 0"
       class="flex-1 flex items-center justify-center p-4"
     >
-      <span class="text-xs" style="color: var(--text); opacity: 0.3;">
+      <span class="text-xs text-text/30">
         从左侧文件夹选择文档
       </span>
     </div>
@@ -73,25 +90,28 @@ function handleToggleStar(event: Event, docId: string) {
       <div
         v-for="doc in documentStore.openedDocs"
         :key="doc.id"
-        class="flex items-center gap-3 px-4 py-3 cursor-pointer border-b group transition-colors"
-        :style="{
-          backgroundColor: doc.id === documentStore.activeDocId ? 'var(--active-bg)' : 'transparent',
-          borderColor: 'var(--border)',
+        class="flex items-center gap-3 px-4 py-3 cursor-pointer border-b border-border group transition-colors"
+        :class="{
+          'bg-active': doc.id === documentStore.activeDocId,
+          'hover:bg-hover': doc.id !== documentStore.activeDocId,
         }"
         @click="handleClick(doc)"
-        @mouseenter="(($event.currentTarget) as HTMLElement).style.backgroundColor = doc.id === documentStore.activeDocId ? 'var(--active-bg)' : 'var(--hover-bg)'"
-        @mouseleave="(($event.currentTarget) as HTMLElement).style.backgroundColor = doc.id === documentStore.activeDocId ? 'var(--active-bg)' : 'transparent'"
       >
-        <!-- File icon -->
-        <component :is="getFileIcon(doc.type)" class="w-5 h-5 shrink-0" style="opacity: 0.5;" />
+        <!-- File type badge -->
+        <div
+          class="w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold text-white shrink-0"
+          :class="getFileTypeBadge(doc.type, doc.name).bgColor"
+        >
+          {{ getFileTypeBadge(doc.type, doc.name).letter }}
+        </div>
 
         <!-- Info -->
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium truncate" style="color: var(--title);">{{ doc.name }}</div>
-          <div class="flex items-center gap-2 text-xs" style="color: var(--text); opacity: 0.5;">
+          <div class="text-sm font-medium truncate text-title">{{ doc.name }}</div>
+          <div class="flex items-center gap-2 text-xs text-text/50">
             <span v-if="doc.lastOpen">{{ formatDate(doc.lastOpen) }}</span>
             <span>{{ formatSize(doc.size) }}</span>
-            <span class="px-1.5 py-0.5 rounded text-xs" style="background-color: var(--panel); opacity: 0.8;">
+            <span class="px-1.5 py-0.5 rounded text-xs bg-panel">
               {{ documentStore.getFolderTag(doc.id) }}
             </span>
           </div>
@@ -99,8 +119,8 @@ function handleToggleStar(event: Event, docId: string) {
 
         <!-- Actions -->
         <button
-          class="shrink-0 h-6 w-6 flex items-center justify-center rounded hover:bg-white/10 transition-colors"
-          :style="{ color: doc.favorite ? '#e8a44a' : 'var(--text)', opacity: doc.favorite ? 1 : 0.3 }"
+          class="shrink-0 h-6 w-6 flex items-center justify-center rounded transition-colors"
+          :class="doc.favorite ? 'text-amber-400' : 'text-text/20 opacity-0 group-hover:opacity-100'"
           @click="handleToggleStar($event, doc.id)"
           title="收藏"
         >
@@ -108,7 +128,7 @@ function handleToggleStar(event: Event, docId: string) {
         </button>
 
         <button
-          class="shrink-0 h-6 w-6 flex items-center justify-center rounded opacity-0 group-hover:opacity-50 hover:opacity-100 transition-opacity"
+          class="shrink-0 h-6 w-6 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity text-text/50 hover:text-text"
           @click="handleRemove($event, doc.id)"
           title="移除"
         >
