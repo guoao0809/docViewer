@@ -9,12 +9,12 @@ const settingStore = useSettingStore()
 </script>
 
 <template>
-  <div class="h-screen w-screen flex flex-col overflow-hidden" style="background-color: var(--bg);">
+  <div class="h-screen w-screen flex flex-col overflow-hidden bg-bg">
     <!-- Top header bar -->
     <AppHeader />
 
     <!-- Three-column body -->
-    <div class="flex flex-1 overflow-hidden" style="border-top: 1px solid var(--border);">
+    <div class="flex flex-1 overflow-hidden border-t border-border">
       <!-- Left: Navigation sidebar -->
       <Sidebar
         v-show="!settingStore.sidebarCollapsed"
