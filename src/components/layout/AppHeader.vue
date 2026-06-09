@@ -2,6 +2,7 @@
 import { useSearchStore } from '@/stores/searchStore'
 import { useSettingStore } from '@/stores/settingStore'
 import { useDocumentStore } from '@/stores/documentStore'
+import { useWindowStore } from '@/stores/windowStore'
 import { openFileDialog } from '@/services/tauriService'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { Search, FolderOpen, Sun, Moon, Minus, Square, X } from 'lucide-vue-next'
@@ -10,7 +11,6 @@ import { Button } from '@/components/ui/button'
 const searchStore = useSearchStore()
 const settingStore = useSettingStore()
 const documentStore = useDocumentStore()
-import { useWindowStore } from '@/stores/windowStore'
 const windowStore = useWindowStore()
 const appWindow = getCurrentWindow()
 
