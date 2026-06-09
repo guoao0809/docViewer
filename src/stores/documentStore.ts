@@ -41,12 +41,16 @@ export const useDocumentStore = defineStore('document', () => {
   const expandedDirs = ref<Set<string>>(new Set())
   const rootPaths = ref<string[]>([])
   const isLoading = ref(false)
+  const openedDocs = ref<DocMeta[]>([])
+  const activeDocId = ref<string | null>(null)
 
   function persistState() {
     const state = {
       rootPaths: rootPaths.value,
       expandedDirs: Array.from(expandedDirs.value),
       docMeta: serializeDocTree(docTree.value),
+      openedDocs: openedDocs.value.map(d => d.id),
+      activeDocId: activeDocId.value,
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
   }
@@ -63,6 +67,9 @@ export const useDocumentStore = defineStore('document', () => {
         rootPaths.value = [state.rootPath as string]
       }
       if (state.expandedDirs) expandedDirs.value = new Set(state.expandedDirs as string[])
+      if (state.openedDocs && state.activeDocId !== undefined) {
+        activeDocId.value = state.activeDocId as string | null
+      }
     } catch { /* ignore corrupted data */ }
   }
 
@@ -152,6 +159,38 @@ export const useDocumentStore = defineStore('document', () => {
     }
   }
 
+  function doOpenDoc(doc: DocMeta) {
+    // Add to openedDocs if not already there (put most recent first)
+    if (!openedDocs.value.find(d => d.id === doc.id)) {
+      openedDocs.value = [doc, ...openedDocs.value]
+    }
+    activeDocId.value = doc.id
+    doLoadDocument(doc.id)
+  }
+
+  function doRemoveOpenedDoc(docId: string) {
+    openedDocs.value = openedDocs.value.filter(d => d.id !== docId)
+    if (activeDocId.value === docId) {
+      const next = openedDocs.value[0]
+      if (next) {
+        activeDocId.value = next.id
+        doLoadDocument(next.id)
+      } else {
+        activeDocId.value = null
+        currentDoc.value = null
+      }
+    }
+  }
+
+  function getFolderTag(docId: string): string {
+    for (const rootPath of rootPaths.value) {
+      if (docId.startsWith(rootPath.replaceAll('\\', '/')) || docId.startsWith(rootPath)) {
+        return rootPath.replaceAll('\\', '/').split('/').pop() || rootPath
+      }
+    }
+    return ''
+  }
+
   function findDocById(id: string, docs: DocMeta[]): DocMeta | null {
     for (const doc of docs) {
       if (doc.id === id) return doc
@@ -207,8 +246,9 @@ export const useDocumentStore = defineStore('document', () => {
 
   return {
     docTree, currentDoc, expandedDirs, rootPaths, isLoading,
+    openedDocs, activeDocId,
     doScanDirectory, doLoadDocument, doToggleFavorite, doToggleExpanded,
-    doRemoveRootFolder,
+    doRemoveRootFolder, doOpenDoc, doRemoveOpenedDoc, getFolderTag,
     loadPersistedState, persistState,
   }
 })

@@ -1,13 +1,11 @@
 import { onMounted, onUnmounted } from 'vue'
 import { useSearchStore } from '@/stores/searchStore'
 import { useDocumentStore } from '@/stores/documentStore'
-import { useTabStore } from '@/stores/tabStore'
 import { useSettingStore } from '@/stores/settingStore'
 
 export function useKeyboard() {
   const searchStore = useSearchStore()
   const documentStore = useDocumentStore()
-  const tabStore = useTabStore()
   const settingStore = useSettingStore()
 
   function handleKeyDown(event: KeyboardEvent) {
@@ -29,31 +27,29 @@ export function useKeyboard() {
 
     if (isMod && event.key === 'w') {
       event.preventDefault()
-      if (tabStore.activeTabId) tabStore.doCloseTab(tabStore.activeTabId)
+      if (documentStore.activeDocId) {
+        documentStore.doRemoveOpenedDoc(documentStore.activeDocId)
+      }
       return
     }
 
     if (isMod && event.key === 'Tab' && !event.shiftKey) {
       event.preventDefault()
-      const tabs = tabStore.tabOrder
-      if (tabs.length === 0) return
-      const currentIndex = tabs.findIndex(t => t.docId === tabStore.activeTabId)
-      const nextIndex = (currentIndex + 1) % tabs.length
-      const nextTab = tabs[nextIndex]
-      tabStore.doSetActiveTab(nextTab.docId)
-      documentStore.doLoadDocument(nextTab.docId)
+      const docs = documentStore.openedDocs
+      if (docs.length === 0) return
+      const currentIndex = docs.findIndex(d => d.id === documentStore.activeDocId)
+      const nextIndex = (currentIndex + 1) % docs.length
+      documentStore.doOpenDoc(docs[nextIndex])
       return
     }
 
     if (isMod && event.key === 'Tab' && event.shiftKey) {
       event.preventDefault()
-      const tabs = tabStore.tabOrder
-      if (tabs.length === 0) return
-      const currentIndex = tabs.findIndex(t => t.docId === tabStore.activeTabId)
-      const prevIndex = (currentIndex - 1 + tabs.length) % tabs.length
-      const prevTab = tabs[prevIndex]
-      tabStore.doSetActiveTab(prevTab.docId)
-      documentStore.doLoadDocument(prevTab.docId)
+      const docs = documentStore.openedDocs
+      if (docs.length === 0) return
+      const currentIndex = docs.findIndex(d => d.id === documentStore.activeDocId)
+      const prevIndex = (currentIndex - 1 + docs.length) % docs.length
+      documentStore.doOpenDoc(docs[prevIndex])
       return
     }
 
