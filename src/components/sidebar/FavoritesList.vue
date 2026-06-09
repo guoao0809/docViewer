@@ -24,27 +24,24 @@ function openDoc(doc: DocMeta) {
 </script>
 
 <template>
-  <div v-if="favorites.length > 0" style="border-bottom: 1px solid var(--border);">
+  <div v-if="favorites.length > 0" class="border-b border-border">
     <div
-      class="flex items-center gap-1 px-4 h-7 cursor-pointer text-xs font-semibold uppercase tracking-wider"
-      style="color: var(--text); opacity: 0.7;"
+      class="flex items-center gap-1 px-4 h-7 cursor-pointer text-xs font-semibold uppercase tracking-wider text-text/70"
       @click="collapsed = !collapsed"
     >
       <ChevronDown v-if="!collapsed" class="w-3.5 h-3.5 shrink-0" />
       <ChevronRight v-else class="w-3.5 h-3.5 shrink-0" />
-      <Star class="w-3 h-3 shrink-0" style="color: var(--primary);" />
+      <Star class="w-3 h-3 shrink-0 text-primary" />
       <span>Favorites</span>
     </div>
     <div v-show="!collapsed">
       <div
         v-for="doc in favorites" :key="doc.id"
-        class="flex items-center gap-2 px-4 cursor-pointer text-sm transition-colors"
-        style="color: var(--text); line-height: 22px;"
+        class="flex items-center gap-2 px-4 cursor-pointer text-sm transition-colors text-text hover:bg-hover"
+        style="line-height: 22px;"
         @click="openDoc(doc)"
-        @mouseenter="(($event.currentTarget) as HTMLElement).style.backgroundColor = 'var(--hover-bg)'"
-        @mouseleave="(($event.currentTarget) as HTMLElement).style.backgroundColor = 'transparent'"
       >
-        <FileText class="w-3.5 h-3.5 shrink-0" style="opacity: 0.4;" />
+        <FileText class="w-3.5 h-3.5 shrink-0 text-text/40" />
         <span class="truncate">{{ doc.name }}</span>
       </div>
     </div>

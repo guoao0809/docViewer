@@ -38,7 +38,7 @@ const shouldAutoExpand = computed(() => !!props.filter && props.filter.length > 
 
 <template>
   <div class="flex-1 overflow-y-auto">
-    <div v-if="filteredTree.length === 0" class="px-4 py-3 text-xs" style="color: var(--text); opacity: 0.4;">
+    <div v-if="filteredTree.length === 0" class="px-4 py-3 text-xs text-text/40">
       {{ props.filter ? '未找到匹配的文件' : '未找到支持的文档文件' }}
     </div>
 
