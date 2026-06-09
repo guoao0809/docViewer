@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button'
 const searchStore = useSearchStore()
 const settingStore = useSettingStore()
 const documentStore = useDocumentStore()
+import { useWindowStore } from '@/stores/windowStore'
+const windowStore = useWindowStore()
 const appWindow = getCurrentWindow()
 
 async function handleOpenFolder() {
@@ -77,7 +79,7 @@ function handleToggleTheme() { settingStore.doToggleTheme() }
           variant="ghost"
           size="icon"
           class="text-text hover:bg-hover"
-          @click="appWindow.minimize()"
+          @click="windowStore.doShowLauncher()"
           title="最小化"
         >
           <Minus class="w-4 h-4" />
