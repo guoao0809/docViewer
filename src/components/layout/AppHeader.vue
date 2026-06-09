@@ -21,12 +21,19 @@ async function handleOpenFolder() {
 
 function handleSearchClick() { searchStore.doOpenSearch() }
 function handleToggleTheme() { settingStore.doToggleTheme() }
+
+function handleHeaderMouseDown(e: MouseEvent) {
+  // 只在左键按下时触发窗口拖拽
+  if (e.button === 0) {
+    appWindow.startDragging()
+  }
+}
 </script>
 
 <template>
   <header
     class="flex items-center justify-between h-12 px-4 select-none shrink-0 bg-surface border-b border-border"
-    data-tauri-drag-region
+    @mousedown="handleHeaderMouseDown"
   >
     <!-- 左侧: Logo + 名称 -->
     <div class="flex items-center gap-3 shrink-0">
@@ -74,7 +81,7 @@ function handleToggleTheme() { settingStore.doToggleTheme() }
       </Button>
 
       <!-- Window controls -->
-      <div class="flex items-center ml-1" data-tauri-drag-region="false">
+      <div class="flex items-center ml-1" @mousedown.stop>
         <Button
           variant="ghost"
           size="icon"
