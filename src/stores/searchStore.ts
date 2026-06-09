@@ -1,7 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { SearchResult } from '@/types/search'
-import { searchIndex } from '@/services/searchService'
+import { searchIndex, buildIndex, isIndexReady } from '@/services/searchService'
+import { readDocument } from '@/services/tauriService'
+import { useDocumentStore } from './documentStore'
+import type { DocMeta } from '@/types/document'
 
 export const useSearchStore = defineStore('search', () => {
   const query = ref('')
@@ -9,10 +12,45 @@ export const useSearchStore = defineStore('search', () => {
   const isSearching = ref(false)
   const searchHistory = ref<string[]>(getSearchHistory())
   const isOpen = ref(false)
+  const isIndexing = ref(false)
+  const indexProgress = ref({ current: 0, total: 0 })
+  const highlightTarget = ref<{ docId: string; matchText: string } | null>(null)
+
+  function flattenDocs(docs: DocMeta[]): DocMeta[] {
+    const result: DocMeta[] = []
+    for (const doc of docs) {
+      if (!doc.children) result.push(doc)
+      if (doc.children) result.push(...flattenDocs(doc.children))
+    }
+    return result
+  }
+
+  async function doBuildIndex() {
+    const docStore = useDocumentStore()
+    const leaves = flattenDocs(docStore.docTree)
+    if (leaves.length === 0) return
+
+    isIndexing.value = true
+    indexProgress.value = { current: 0, total: leaves.length }
+
+    try {
+      await buildIndex(docStore.docTree, readDocument, (current, total) => {
+        indexProgress.value = { current, total }
+      })
+    } finally {
+      isIndexing.value = false
+    }
+  }
 
   function doSearch(q: string) {
     query.value = q
     if (!q.trim()) { results.value = []; isSearching.value = false; return }
+
+    if (!isIndexReady()) {
+      results.value = []
+      return
+    }
+
     isSearching.value = true
     results.value = searchIndex(q)
     isSearching.value = false
@@ -25,8 +63,14 @@ export const useSearchStore = defineStore('search', () => {
 
   function doOpenSearch() { isOpen.value = true; query.value = ''; results.value = [] }
   function doCloseSearch() { isOpen.value = false; query.value = ''; results.value = [] }
+  function doClearHighlight() { highlightTarget.value = null }
 
-  return { query, results, isSearching, searchHistory, isOpen, doSearch, doAddToHistory, doOpenSearch, doCloseSearch }
+  return {
+    query, results, isSearching, searchHistory, isOpen,
+    isIndexing, indexProgress, highlightTarget,
+    doSearch, doAddToHistory, doOpenSearch, doCloseSearch,
+    doBuildIndex, doClearHighlight,
+  }
 })
 
 function getSearchHistory(): string[] {
