@@ -62,6 +62,22 @@ function handleOverlayClick(event: MouseEvent) {
     searchStore.doCloseSearch()
   }
 }
+
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
+function highlightSnippet(snippet: string, query: string): string {
+  const escaped = escapeHtml(snippet)
+  if (!query) return escaped
+  const terms = query
+    .split(/\s+/)
+    .filter(t => t.length > 0)
+    .map(t => escapeHtml(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  if (terms.length === 0) return escaped
+  const regex = new RegExp(`(${terms.join('|')})`, 'gi')
+  return escaped.replace(regex, '<mark style="background:#fde047;color:#000;border-radius:2px;padding:0 1px;">$1</mark>')
+}
 </script>
 
 <template>
@@ -123,9 +139,7 @@ function handleOverlayClick(event: MouseEvent) {
                 <span class="text-sm truncate" style="color: var(--title);">{{ result.fileName }}</span>
                 <CornerDownLeft v-if="index === selectedIndex" class="w-3.5 h-3.5 opacity-30 shrink-0 ml-auto" />
               </div>
-              <div v-if="result.snippet" class="text-xs truncate opacity-50 pl-6">
-                {{ result.snippet }}
-              </div>
+              <div v-if="result.snippet" class="text-xs truncate pl-6" style="opacity: 0.7;" v-html="highlightSnippet(result.snippet, searchStore.query)" />
               <div v-if="result.line > 0" class="text-xs opacity-30 pl-6">
                 Line {{ result.line }}
               </div>
