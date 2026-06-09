@@ -2,13 +2,11 @@
 import { ref, watch, nextTick } from 'vue'
 import { useSearchStore } from '@/stores/searchStore'
 import { useDocumentStore } from '@/stores/documentStore'
-import { useTabStore } from '@/stores/tabStore'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Search, FileText, CornerDownLeft, X, Clock, Loader2 } from 'lucide-vue-next'
 
 const searchStore = useSearchStore()
 const documentStore = useDocumentStore()
-const tabStore = useTabStore()
 const inputRef = ref<HTMLInputElement | null>(null)
 const selectedIndex = ref(0)
 
@@ -35,9 +33,23 @@ function handleSelect(result: typeof searchStore.results[number]) {
     matchText: result.matchText,
   }
 
-  tabStore.doOpenTab(result.docId, result.fileName)
-  documentStore.doLoadDocument(result.docId)
+  // Find the doc in the tree and open it
+  const doc = findDocById(result.docId, documentStore.docTree)
+  if (doc) {
+    documentStore.doOpenDoc(doc)
+  }
   searchStore.doCloseSearch()
+}
+
+function findDocById(id: string, docs: typeof documentStore.docTree): typeof documentStore.docTree[number] | null {
+  for (const doc of docs) {
+    if (doc.id === id) return doc
+    if (doc.children) {
+      const found = findDocById(id, doc.children)
+      if (found) return found
+    }
+  }
+  return null
 }
 
 function handleKeyDown(event: KeyboardEvent) {

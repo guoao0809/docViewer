@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useDocumentStore } from '@/stores/documentStore'
-import { useTabStore } from '@/stores/tabStore'
 import type { DocMeta } from '@/types/document'
 import { FileText, Star, ChevronDown, ChevronRight } from 'lucide-vue-next'
 
 const documentStore = useDocumentStore()
-const tabStore = useTabStore()
 const collapsed = ref(false)
 
 function getAllDocs(docs: DocMeta[]): DocMeta[] {
@@ -21,8 +19,7 @@ function getAllDocs(docs: DocMeta[]): DocMeta[] {
 const favorites = computed(() => getAllDocs(documentStore.docTree).filter(d => d.favorite))
 
 function openDoc(doc: DocMeta) {
-  tabStore.doOpenTab(doc.id, doc.name)
-  documentStore.doLoadDocument(doc.id)
+  documentStore.doOpenDoc(doc)
 }
 </script>
 

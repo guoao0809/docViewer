@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { watch, nextTick } from 'vue'
 import { useDocumentStore } from '@/stores/documentStore'
-import { useTabStore } from '@/stores/tabStore'
 import { useSearchStore } from '@/stores/searchStore'
 import { FileText } from 'lucide-vue-next'
 import { openFileDialog } from '@/services/tauriService'
 
 const documentStore = useDocumentStore()
-const tabStore = useTabStore()
 const searchStore = useSearchStore()
 
 async function handleOpenFolder() {

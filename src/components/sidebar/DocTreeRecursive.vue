@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 import type { DocMeta } from '@/types/document'
 import { useDocumentStore } from '@/stores/documentStore'
-import { useTabStore } from '@/stores/tabStore'
 import { ChevronRight, ChevronDown, FileText, Folder, FolderOpen, X } from 'lucide-vue-next'
 
 const props = defineProps<{
@@ -12,7 +11,6 @@ const props = defineProps<{
 }>()
 
 const documentStore = useDocumentStore()
-const tabStore = useTabStore()
 
 function isExpanded(id: string) { return documentStore.expandedDirs.has(id) }
 function isActive(id: string) { return documentStore.currentDoc?.meta.id === id }
@@ -21,8 +19,7 @@ function handleClick(doc: DocMeta) {
   if (doc.children) {
     documentStore.doToggleExpanded(doc.id)
   } else {
-    tabStore.doOpenTab(doc.id, doc.name)
-    documentStore.doLoadDocument(doc.id)
+    documentStore.doOpenDoc(doc)
   }
 }
 
