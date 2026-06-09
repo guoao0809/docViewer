@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { readTextFile, exists } from '@tauri-apps/plugin-fs'
+import { exists } from '@tauri-apps/plugin-fs'
 import { open } from '@tauri-apps/plugin-dialog'
 import type { DocMeta, FileMeta } from '@/types/document'
 
@@ -13,9 +13,14 @@ export async function scanDirectory(path: string): Promise<DocMeta[]> {
   }
 }
 
+/** Read document content via the Rust backend command (BOM-aware), not subject to plugin scope restrictions. */
 export async function readDocument(path: string): Promise<string> {
-  const content = await readTextFile(path)
-  return content
+  try {
+    return await invoke<string>('read_document', { path })
+  } catch (error) {
+    console.error('Failed to read document:', error)
+    throw error
+  }
 }
 
 export async function openFileDialog(): Promise<string | null> {
