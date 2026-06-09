@@ -12,7 +12,6 @@
   "app": {
     "windows": [
       {
-        "label": "main",
         "title": "DocViewer",
         "width": 1400,
         "height": 900,
@@ -22,22 +21,6 @@
         "resizable": true,
         "fullscreen": false,
         "decorations": false
-      },
-      {
-        "label": "launcher",
-        "title": "DocViewer",
-        "width": 480,
-        "height": 460,
-        "minWidth": 400,
-        "minHeight": 300,
-        "center": false,
-        "resizable": false,
-        "fullscreen": false,
-        "decorations": false,
-        "visible": false,
-        "skipTaskbar": true,
-        "alwaysOnTop": true,
-        "focus": false
       }
     ],
     "security": {
