@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "DocViewer",
+  "productName": "docViewer",
   "version": "0.1.0",
   "identifier": "com.docviewer.app",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "DocViewer",
+        "title": "docViewer",
         "width": 1400,
         "height": 900,
         "minWidth": 900,
