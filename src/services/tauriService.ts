@@ -62,3 +62,23 @@ export async function writeDocument(path: string, content: string): Promise<void
     throw error
   }
 }
+
+/** Create an empty file at path/name, returns full path */
+export async function createFile(path: string, name: string): Promise<string> {
+  try {
+    return await invoke<string>('create_file', { path, name })
+  } catch (error) {
+    console.error('Failed to create file:', error)
+    throw error
+  }
+}
+
+/** Create a folder at path/name, returns full path */
+export async function createFolder(path: string, name: string): Promise<string> {
+  try {
+    return await invoke<string>('create_folder', { path, name })
+  } catch (error) {
+    console.error('Failed to create folder:', error)
+    throw error
+  }
+}
