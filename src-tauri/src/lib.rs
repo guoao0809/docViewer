@@ -166,6 +166,22 @@ fn write_document(path: String, content: String) -> Result<(), String> {
         .map_err(|e| format!("Failed to write file: {}", e))
 }
 
+#[tauri::command]
+fn create_file(path: String, name: String) -> Result<String, String> {
+    let full = Path::new(&path).join(&name);
+    fs::write(&full, b"")
+        .map_err(|e| format!("Failed to create file: {}", e))?;
+    Ok(full.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+fn create_folder(path: String, name: String) -> Result<String, String> {
+    let full = Path::new(&path).join(&name);
+    fs::create_dir(&full)
+        .map_err(|e| format!("Failed to create folder: {}", e))?;
+    Ok(full.to_string_lossy().to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -234,7 +250,9 @@ pub fn run() {
             scan_directory,
             read_document,
             get_file_metadata,
-            write_document
+            write_document,
+            create_file,
+            create_folder
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
