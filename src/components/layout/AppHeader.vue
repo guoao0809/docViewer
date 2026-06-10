@@ -70,16 +70,14 @@ function handleHeaderMouseDown(e: MouseEvent) {
       >
         <FolderOpen class="w-4 h-4" />
       </Button> -->
-      <Button
-        variant="ghost"
-        size="icon"
-        class="text-text hover:bg-hover"
+      <button
+        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-10 w-10 hover:bg-hover text-text"
         @click="handleToggleTheme"
         :title="settingStore.theme === 'dark' ? '切换到浅色主题' : '切换到深色主题'"
       >
         <Sun v-if="settingStore.theme === 'dark'" class="w-4 h-4" />
         <Moon v-else class="w-4 h-4" />
-      </Button>
+      </button>
 
       <!-- Window controls -->
       <div class="flex items-center ml-1" @mousedown.stop>
