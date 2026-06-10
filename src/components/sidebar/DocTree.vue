@@ -6,11 +6,15 @@ import DocTreeRecursive from './DocTreeRecursive.vue'
 
 const props = defineProps<{
   filter?: string
+  createMode: 'file' | 'folder' | null
+}>()
+
+const emit = defineEmits<{
+  cancelCreate: []
 }>()
 
 const documentStore = useDocumentStore()
 
-/** Filter tree: keep entries whose name matches, or whose children contain matches. */
 function filterTree(docs: DocMeta[], query: string): DocMeta[] {
   if (!query) return docs
   const lower = query.toLowerCase()
@@ -32,7 +36,6 @@ function filterTree(docs: DocMeta[], query: string): DocMeta[] {
 
 const filteredTree = computed(() => filterTree(documentStore.docTree, props.filter ?? ''))
 
-/** When filter is active, auto-expand all folders so matches are visible */
 const shouldAutoExpand = computed(() => !!props.filter && props.filter.length > 0)
 </script>
 
@@ -48,7 +51,8 @@ const shouldAutoExpand = computed(() => !!props.filter && props.filter.length > 
       :doc="doc"
       :depth="0"
       :should-auto-expand="shouldAutoExpand"
+      :create-mode="props.createMode"
+      @cancel-create="emit('cancelCreate')"
     />
   </div>
 </template>
-

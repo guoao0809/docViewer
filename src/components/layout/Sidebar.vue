@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { watch } from 'vue'
+import { ref, watch } from 'vue'
 import DocTree from '@/components/sidebar/DocTree.vue'
 import { useDocumentStore } from '@/stores/documentStore'
 import { useSearchStore } from '@/stores/searchStore'
 import { openFileDialog } from '@/services/tauriService'
-import { FolderPlus, Star, FileText, Search, Settings } from 'lucide-vue-next'
+import { FolderPlus, FilePlus, ChevronsUpDown, Star, FileText, Search } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 
 defineProps<{
@@ -17,6 +17,8 @@ const emit = defineEmits<{
 
 const documentStore = useDocumentStore()
 const searchStore = useSearchStore()
+
+const createMode = ref<'file' | 'folder' | null>(null)
 
 const navItems = [
   { key: 'favorites', icon: Star,      label: '收藏夹' },
@@ -33,6 +35,21 @@ function handleNavClick(key: string) {
   emit('navChange', key)
 }
 
+function handleCreateMode(mode: 'file' | 'folder') {
+  if (!documentStore.selectedNodeId) return
+  documentStore.expandedDirs.add(documentStore.selectedNodeId)
+  documentStore.expandedDirs = new Set(documentStore.expandedDirs)
+  createMode.value = mode
+}
+
+function handleCancelCreate() {
+  createMode.value = null
+}
+
+function handleCollapseAll() {
+  documentStore.doCollapseAll()
+}
+
 // 点击文件后自动切换到「最近打开」
 watch(() => documentStore.currentDoc, () => {
   if (emit) emit('navChange', 'all')
@@ -42,7 +59,7 @@ watch(() => documentStore.currentDoc, () => {
 <template>
   <aside class="flex flex-col overflow-hidden select-none bg-surface">
     <!-- Add document button -->
-    <!-- <div class="px-3 py-3 shrink-0">
+    <div class="px-3 py-3 shrink-0">
       <Button
         class="w-full bg-primary text-white hover:bg-primary/90 font-medium"
         @click="handleAddFolder"
@@ -50,7 +67,7 @@ watch(() => documentStore.currentDoc, () => {
         <FolderPlus class="w-4 h-4" />
         添加文档
       </Button>
-    </div> -->
+    </div>
 
     <!-- Navigation menu -->
     <div class="px-2 shrink-0 space-y-0.5 pt-1.5">
@@ -75,24 +92,37 @@ watch(() => documentStore.currentDoc, () => {
     <!-- Project folders section -->
     <div class="flex items-center justify-between px-4 h-8 shrink-0 text-base font-semibold tracking-wider text-text/60">
       <span>项目</span>
-      <Button variant="ghost" size="icon-sm" class="h-5 w-5 text-text/60 hover:bg-hover" @click="handleAddFolder" title="添加文件夹">
-        <FolderPlus class="w-3 h-3" />
-      </Button>
+      <div class="flex items-center gap-0.5">
+        <button
+          class="h-5 w-5 flex items-center justify-center rounded text-text/50 hover:bg-hover transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+          :disabled="!documentStore.selectedNodeId"
+          @click="handleCreateMode('folder')"
+          title="新建文件夹"
+        >
+          <FolderPlus class="w-3 h-3" />
+        </button>
+        <button
+          class="h-5 w-5 flex items-center justify-center rounded text-text/50 hover:bg-hover transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+          :disabled="!documentStore.selectedNodeId"
+          @click="handleCreateMode('file')"
+          title="新建文件"
+        >
+          <FilePlus class="w-3 h-3" />
+        </button>
+        <button
+          class="h-5 w-5 flex items-center justify-center rounded text-text/50 hover:bg-hover transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+          :disabled="documentStore.expandedDirs.size === 0"
+          @click="handleCollapseAll"
+          title="收起文件夹"
+        >
+          <ChevronsUpDown class="w-3 h-3" />
+        </button>
+      </div>
     </div>
 
     <!-- Folder tree -->
     <div class="flex-1 overflow-y-auto px-2">
-      <DocTree />
+      <DocTree :create-mode="createMode" @cancel-create="handleCancelCreate" />
     </div>
-
-    <!-- Settings at bottom -->
-    <!-- <div class="border-t border-border mt-auto">
-      <div
-        class="flex items-center gap-2 px-4 py-2.5 cursor-pointer text-base text-text/60 hover:bg-hover transition-colors"
-      >
-        <Settings class="w-4 h-4 shrink-0" />
-        <span>设置</span>
-      </div>
-    </div> -->
   </aside>
 </template>
