@@ -52,3 +52,13 @@ export async function getFileMetadata(path: string): Promise<FileMeta> {
     return { size: 0, modified: 0, type: 'text' }
   }
 }
+
+/** Write content to a file via the Rust backend command */
+export async function writeDocument(path: string, content: string): Promise<void> {
+  try {
+    await invoke('write_document', { path, content })
+  } catch (error) {
+    console.error('Failed to write document:', error)
+    throw error
+  }
+}

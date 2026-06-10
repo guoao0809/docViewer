@@ -1,20 +1,126 @@
 <script setup lang="ts">
-import { watch, nextTick } from 'vue'
+import { ref, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useDocumentStore } from '@/stores/documentStore'
 import { useSearchStore } from '@/stores/searchStore'
-import { openFileDialog } from '@/services/tauriService'
-import { FileText, Edit3, Copy, MoreHorizontal } from 'lucide-vue-next'
+import { openFileDialog, writeDocument } from '@/services/tauriService'
+import { FileText, Edit3, Eye, Copy, MoreHorizontal } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
+
+import { EditorView, keymap, lineNumbers } from '@codemirror/view'
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
+import { markdown } from '@codemirror/lang-markdown'
+import { json } from '@codemirror/lang-json'
 
 const documentStore = useDocumentStore()
 const searchStore = useSearchStore()
+
+const viewMode = ref(true)
+const editorContainer = ref<HTMLDivElement | null>(null)
+const editorView = ref<EditorView | null>(null)
+let saveTimer: ReturnType<typeof setTimeout> | null = null
+
+/** 根据文件类型返回 CodeMirror 语言扩展 */
+function getLanguageExtension(fileName: string) {
+  const ext = fileName.split('.').pop()?.toLowerCase() || ''
+  if (ext === 'md' || ext === 'markdown') return markdown()
+  if (ext === 'json') return json()
+  return []
+}
+
+/** 切换到编辑模式 */
+async function enterEditMode() {
+  viewMode.value = false
+  await nextTick()
+
+  if (!editorContainer.value || !documentStore.currentDoc) return
+
+  const langExt = getLanguageExtension(documentStore.currentDoc.meta.name)
+
+  editorView.value = new EditorView({
+    doc: documentStore.currentDoc.raw,
+    extensions: [
+      lineNumbers(),
+      history(),
+      keymap.of([...defaultKeymap, ...historyKeymap]),
+      langExt,
+      EditorView.updateListener.of(update => {
+        if (update.docChanged) {
+          if (saveTimer) clearTimeout(saveTimer)
+          saveTimer = setTimeout(() => {
+            const content = update.state.doc.toString()
+            const path = documentStore.currentDoc!.meta.path
+            writeDocument(path, content).catch(err => {
+              console.error('Auto-save failed:', err)
+            })
+          }, 1500)
+        }
+      }),
+      EditorView.theme({
+        '&': { height: '100%' },
+        '.cm-scroller': { overflow: 'auto' },
+        '.cm-editor': { height: '100%' },
+      }),
+    ],
+    parent: editorContainer.value,
+  })
+}
+
+/** 切换回查看模式 */
+async function exitEditMode() {
+  if (editorView.value) {
+    const content = editorView.value.state.doc.toString()
+    const path = documentStore.currentDoc!.meta.path
+    try {
+      await writeDocument(path, content)
+    } catch (err) {
+      console.error('Save before exit failed:', err)
+    }
+    editorView.value.destroy()
+    editorView.value = null
+  }
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = null
+  }
+  viewMode.value = true
+  documentStore.doLoadDocument(documentStore.currentDoc!.meta.id)
+}
+
+/** 编辑/查看切换 */
+function toggleEditMode() {
+  if (viewMode.value) {
+    enterEditMode()
+  } else {
+    exitEditMode()
+  }
+}
+
+// 切换文档时：如果在编辑模式，先保存再切回查看
+watch(() => documentStore.currentDoc?.meta.id, () => {
+  if (!viewMode.value && editorView.value) {
+    const content = editorView.value.state.doc.toString()
+    const path = documentStore.currentDoc!.meta.path
+    writeDocument(path, content).catch(() => {})
+    editorView.value.destroy()
+    editorView.value = null
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null }
+  }
+  viewMode.value = true
+})
+
+// 组件销毁时清理
+onBeforeUnmount(() => {
+  editorView.value?.destroy()
+  if (saveTimer) clearTimeout(saveTimer)
+})
+
+// ---- 搜索高亮逻辑 ----
 
 async function handleOpenFolder() {
   const folder = await openFileDialog()
   if (folder) await documentStore.doScanDirectory(folder)
 }
 
-/** Walk text nodes and highlight matching terms */
 function highlightText(container: HTMLElement, matchText: string) {
   const terms = matchText.split(/\s+/).filter(t => t.length > 1).map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
   if (terms.length === 0) return
@@ -93,8 +199,15 @@ function handleContentClick() {
       <span class="text-lg font-semibold truncate flex-1 text-title">
         {{ documentStore.currentDoc.meta.name }}
       </span>
-      <Button variant="ghost" size="icon" class="text-text/50 hover:bg-hover" title="编辑">
-        <Edit3 class="w-4 h-4" />
+      <Button
+        variant="ghost"
+        size="icon"
+        class="text-text/50 hover:bg-hover"
+        :title="viewMode ? '编辑' : '查看'"
+        @click="toggleEditMode"
+      >
+        <Edit3 v-if="viewMode" class="w-4 h-4" />
+        <Eye v-else class="w-4 h-4" />
       </Button>
       <Button variant="ghost" size="icon" class="text-text/50 hover:bg-hover" title="复制">
         <Copy class="w-4 h-4" />
@@ -104,9 +217,12 @@ function handleContentClick() {
       </Button>
     </div>
 
-    <!-- Content scroll -->
-    <div class="flex-1 overflow-y-auto" @click="handleContentClick">
+    <!-- View mode -->
+    <div v-if="viewMode" class="flex-1 overflow-y-auto" @click="handleContentClick">
       <div class="markdown-content" v-html="documentStore.currentDoc.html" />
     </div>
+
+    <!-- Edit mode -->
+    <div v-else ref="editorContainer" class="flex-1 overflow-hidden bg-bg" />
   </div>
 </template>
