@@ -202,19 +202,19 @@ function handleContentClick() {
       <Button
         variant="ghost"
         size="icon"
-        class="text-text/50 hover:bg-hover"
+        class="text-text/200 hover:bg-hover"
         :title="viewMode ? '编辑' : '查看'"
         @click="toggleEditMode"
       >
         <Edit3 v-if="viewMode" class="w-4 h-4" />
         <Eye v-else class="w-4 h-4" />
       </Button>
-      <Button variant="ghost" size="icon" class="text-text/50 hover:bg-hover" title="复制">
+      <!-- <Button variant="ghost" size="icon" class="text-text/50 hover:bg-hover" title="复制">
         <Copy class="w-4 h-4" />
-      </Button>
-      <Button variant="ghost" size="icon" class="text-text/50 hover:bg-hover" title="更多">
+      </Button> -->
+      <!-- <Button variant="ghost" size="icon" class="text-text/50 hover:bg-hover" title="更多">
         <MoreHorizontal class="w-4 h-4" />
-      </Button>
+      </Button> -->
     </div>
 
     <!-- View mode -->

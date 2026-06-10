@@ -53,11 +53,11 @@ function handleHeaderMouseDown(e: MouseEvent) {
           class="ml-auto text-sm px-2 py-0.5 rounded bg-panel border border-border opacity-40 font-mono"
         >Ctrl+K</kbd>
       </div>
-    </div>
+    </div>  
 
     <!-- 右侧: 操作按钮 -->
     <div class="flex items-center gap-1 shrink-0">
-      <Button
+      <!-- <Button
         variant="ghost"
         size="icon"
         class="text-text hover:bg-hover"
@@ -65,7 +65,7 @@ function handleHeaderMouseDown(e: MouseEvent) {
         title="打开文件夹"
       >
         <FolderOpen class="w-4 h-4" />
-      </Button>
+      </Button> -->
       <Button
         variant="ghost"
         size="icon"

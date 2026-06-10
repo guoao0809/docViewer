@@ -42,7 +42,7 @@ watch(() => documentStore.currentDoc, () => {
 <template>
   <aside class="flex flex-col overflow-hidden select-none bg-surface">
     <!-- Add document button -->
-    <div class="px-3 py-3 shrink-0">
+    <!-- <div class="px-3 py-3 shrink-0">
       <Button
         class="w-full bg-primary text-white hover:bg-primary/90 font-medium"
         @click="handleAddFolder"
@@ -50,17 +50,17 @@ watch(() => documentStore.currentDoc, () => {
         <FolderPlus class="w-4 h-4" />
         添加文档
       </Button>
-    </div>
+    </div> -->
 
     <!-- Navigation menu -->
-    <div class="px-2 shrink-0 space-y-0.5">
+    <div class="px-2 shrink-0 space-y-0.5 pt-1.5">
       <div
         v-for="item in navItems"
         :key="item.key"
         class="flex items-center gap-2 px-3 py-2.5 rounded-md cursor-pointer text-base transition-colors"
         :class="{
           'bg-active text-title font-medium': activeNav === item.key,
-          'text-text hover:bg-hover': activeNav !== item.key,
+          'text-text hover:bg-active': activeNav !== item.key,
         }"
         @click="item.key === 'history' ? searchStore.doOpenSearchWithHistory() : handleNavClick(item.key)"
       >
