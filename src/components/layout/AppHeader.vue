@@ -18,11 +18,15 @@ async function handleOpenFolder() {
 }
 
 function handleSearchClick() { searchStore.doOpenSearch() }
-function handleToggleTheme() { settingStore.doToggleTheme() }
+function handleToggleTheme() {
+  console.log('Toggle theme, current:', settingStore.theme)
+  settingStore.doToggleTheme()
+  console.log('New theme:', settingStore.theme)
+}
 
 function handleHeaderMouseDown(e: MouseEvent) {
   if (e.button === 0) {
-    appWindow.startDragging()
+    try { appWindow.startDragging() } catch { /* ignore */ }
   }
 }
 </script>
