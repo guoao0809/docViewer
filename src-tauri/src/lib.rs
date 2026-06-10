@@ -160,6 +160,12 @@ fn scan_dir_recursive(path: &Path, depth: u32) -> Result<Vec<serde_json::Value>,
     Ok(entries)
 }
 
+#[tauri::command]
+fn write_document(path: String, content: String) -> Result<(), String> {
+    std::fs::write(&path, content.as_bytes())
+        .map_err(|e| format!("Failed to write file: {}", e))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -227,7 +233,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             scan_directory,
             read_document,
-            get_file_metadata
+            get_file_metadata,
+            write_document
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
