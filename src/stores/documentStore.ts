@@ -43,6 +43,7 @@ export const useDocumentStore = defineStore('document', () => {
   const isLoading = ref(false)
   const openedDocs = ref<DocMeta[]>([])
   const activeDocId = ref<string | null>(null)
+  const selectedNodeId = ref<string | null>(null)
 
   function persistState() {
     const state = {
@@ -128,6 +129,9 @@ export const useDocumentStore = defineStore('document', () => {
   }
 
   function doRemoveRootFolder(id: string) {
+    if (selectedNodeId.value && (selectedNodeId.value === id || selectedNodeId.value.startsWith(id))) {
+      selectedNodeId.value = null
+    }
     docTree.value = docTree.value.filter(d => d.id !== id)
     rootPaths.value = rootPaths.value.filter(p => p !== id)
     expandedDirs.value.delete(id)
@@ -230,6 +234,61 @@ export const useDocumentStore = defineStore('document', () => {
     persistState()
   }
 
+  function doSelectNode(id: string) { selectedNodeId.value = id }
+
+  function doCollapseAll() {
+    expandedDirs.value = new Set()
+    persistState()
+  }
+
+  /** Get the parent path for creating items under a selected node */
+  function getParentPath(id: string): string {
+    const doc = findDocById(id, docTree.value)
+    if (!doc) return ''
+    if (doc.children) return doc.path
+    const p = doc.path.replaceAll('\\', '/')
+    const lastSep = p.lastIndexOf('/')
+    return lastSep > 0 ? p.substring(0, lastSep) : p
+  }
+
+  /** Re-scan parent directory to refresh children after create/delete */
+  async function doRefreshChildren(parentId: string) {
+    const parent = findDocById(parentId, docTree.value)
+    if (!parent || !parent.children) {
+      // If parent not found or has no children, maybe it's a file — refresh its parent folder
+      const parentPath = getParentPath(parentId)
+      const dirNode = findDocById(parentPath, docTree.value)
+      if (!dirNode || !dirNode.children) return
+      try {
+        const fresh = await scanDirectory(dirNode.path)
+        const persisted = getPersistedDocMetaMap()
+        mergePersistedIntoTree(fresh, persisted)
+        dirNode.children = fresh
+      } catch { /* ignore */ }
+    } else {
+      try {
+        const fresh = await scanDirectory(parent.path)
+        const persisted = getPersistedDocMetaMap()
+        mergePersistedIntoTree(fresh, persisted)
+        parent.children = fresh
+      } catch { /* ignore */ }
+    }
+    docTree.value = [...docTree.value]
+    persistState()
+    const searchStore = useSearchStore()
+    searchStore.doBuildIndex()
+  }
+
+  async function doCreateFile(parentPath: string, name: string): Promise<string> {
+    const { createFile } = await import('@/services/tauriService')
+    return await createFile(parentPath, name)
+  }
+
+  async function doCreateFolder(parentPath: string, name: string): Promise<string> {
+    const { createFolder } = await import('@/services/tauriService')
+    return await createFolder(parentPath, name)
+  }
+
   // Auto-persist on changes
   watch(docTree, () => persistState(), { deep: true })
   watch(expandedDirs, () => persistState(), { deep: true })
@@ -257,9 +316,11 @@ export const useDocumentStore = defineStore('document', () => {
 
   return {
     docTree, currentDoc, expandedDirs, rootPaths, isLoading,
-    openedDocs, activeDocId, favoriteDocs,
+    openedDocs, activeDocId, favoriteDocs, selectedNodeId,
     doScanDirectory, doLoadDocument, doToggleFavorite, doToggleExpanded,
     doRemoveRootFolder, doOpenDoc, doRemoveOpenedDoc, getFolderTag,
+    doSelectNode, doCollapseAll, getParentPath, doRefreshChildren,
+    doCreateFile, doCreateFolder,
     loadPersistedState, persistState,
   }
 })
