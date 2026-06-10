@@ -6,3 +6,8 @@ import "./style.css"
 const app = createApp(App)
 app.use(createPinia())
 app.mount("#app")
+
+// 生产环境禁用右键菜单，开发环境保留
+if (import.meta.env.PROD) {
+  document.addEventListener('contextmenu', e => e.preventDefault())
+}
