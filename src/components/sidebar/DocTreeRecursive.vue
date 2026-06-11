@@ -143,8 +143,9 @@ function countDocs(doc: DocMeta): number {
         </button>
       </template>
       <template v-else>
+        <div class="w-3.5 h-3.5 shrink-0" />
         <div
-          class="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold text-white shrink-0 ml-1"
+          class="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold text-white shrink-0"
           :class="getFileTypeBadge(doc.name).bgColor"
         >
           {{ getFileTypeBadge(doc.name).letter }}
