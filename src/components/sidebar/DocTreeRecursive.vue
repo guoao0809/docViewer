@@ -2,7 +2,7 @@
 import { computed, ref, watch, nextTick } from 'vue'
 import type { DocMeta } from '@/types/document'
 import { useDocumentStore } from '@/stores/documentStore'
-import { ChevronRight, ChevronDown, Folder, FolderOpen, X, Check } from 'lucide-vue-next'
+import { ChevronRight, ChevronDown, Folder, FolderOpen, X } from 'lucide-vue-next'
 
 const props = defineProps<{
   doc: DocMeta
@@ -45,22 +45,9 @@ function handleClick(doc: DocMeta) {
 
 const isRoot = computed(() => props.depth === 0 && props.doc.children)
 
-const confirmingRemove = ref<string | null>(null)
-
 function handleRemove(event: Event) {
   event.stopPropagation()
-  confirmingRemove.value = props.doc.id
-}
-
-function handleConfirmRemove(event: Event) {
-  event.stopPropagation()
-  documentStore.doRemoveRootFolder(props.doc.id)
-  confirmingRemove.value = null
-}
-
-function handleCancelRemove(event: Event) {
-  event.stopPropagation()
-  confirmingRemove.value = null
+  documentStore.doRequestRemove(props.doc.id, props.doc.name)
 }
 
 function getCreateTargetPath(): string {
@@ -147,30 +134,13 @@ function countDocs(doc: DocMeta): number {
           <span class="text-[13px] text-text/50">({{ countDocs(doc) }})</span>
         </span>
         <button
-          v-if="isRoot && confirmingRemove !== doc.id"
+          v-if="isRoot"
           class="ml-auto h-5 w-5 flex items-center justify-center rounded hover:bg-hover opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
           @click="handleRemove"
           title="移除文件夹"
         >
           <X class="w-3 h-3 text-text/50" />
         </button>
-        <template v-if="isRoot && confirmingRemove === doc.id">
-          <span class="ml-auto text-xs text-red-400 shrink-0">确定?</span>
-          <button
-            class="h-5 w-5 flex items-center justify-center rounded hover:bg-red-500/20 shrink-0"
-            @click="handleConfirmRemove"
-            title="确认"
-          >
-            <Check class="w-3 h-3 text-red-400" />
-          </button>
-          <button
-            class="h-5 w-5 flex items-center justify-center rounded hover:bg-hover shrink-0"
-            @click="handleCancelRemove"
-            title="取消"
-          >
-            <X class="w-3 h-3 text-text/50" />
-          </button>
-        </template>
       </template>
       <template v-else>
         <div

@@ -44,6 +44,30 @@ export const useDocumentStore = defineStore('document', () => {
   const openedDocs = ref<DocMeta[]>([])
   const activeDocId = ref<string | null>(null)
   const selectedNodeId = ref<string | null>(null)
+  const pendingRemoveId = ref<string | null>(null)
+  const pendingRemoveName = ref('')
+
+  function doRequestRemove(id: string, name: string) {
+    if (localStorage.getItem('docviewer-skip-remove-confirm') === 'true') {
+      doRemoveRootFolder(id)
+      return
+    }
+    pendingRemoveId.value = id
+    pendingRemoveName.value = name
+  }
+
+  function doConfirmRemove() {
+    if (pendingRemoveId.value) {
+      doRemoveRootFolder(pendingRemoveId.value)
+      pendingRemoveId.value = null
+      pendingRemoveName.value = ''
+    }
+  }
+
+  function doCancelRemove() {
+    pendingRemoveId.value = null
+    pendingRemoveName.value = ''
+  }
 
   function persistState() {
     const state = {
@@ -317,6 +341,8 @@ export const useDocumentStore = defineStore('document', () => {
   return {
     docTree, currentDoc, expandedDirs, rootPaths, isLoading,
     openedDocs, activeDocId, favoriteDocs, selectedNodeId,
+    pendingRemoveId, pendingRemoveName,
+    doRequestRemove, doConfirmRemove, doCancelRemove,
     doScanDirectory, doLoadDocument, doToggleFavorite, doToggleExpanded,
     doRemoveRootFolder, doOpenDoc, doRemoveOpenedDoc, getFolderTag,
     doSelectNode, doCollapseAll, getParentPath, doRefreshChildren,

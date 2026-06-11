@@ -6,6 +6,7 @@ import { useSearchStore } from '@/stores/searchStore'
 import { openFileDialog } from '@/services/tauriService'
 import { FolderPlus, FilePlus, ChevronsUpDown, Star, FileText, Search } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 
 defineProps<{
   activeNav: string
@@ -99,7 +100,7 @@ watch(() => documentStore.currentDoc, () => {
           @click="handleCreateMode('folder')"
           title="新建文件夹"
         >
-          <FolderPlus class="w-3 h-3" />
+          <FolderPlus class="w-3.6 h-3.6" />
         </button>
         <button
           class="h-5 w-5 flex items-center justify-center rounded text-text/50 hover:bg-hover transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
@@ -107,7 +108,7 @@ watch(() => documentStore.currentDoc, () => {
           @click="handleCreateMode('file')"
           title="新建文件"
         >
-          <FilePlus class="w-3 h-3" />
+          <FilePlus class="w-3.5 h-3.5" />
         </button>
         <button
           class="h-5 w-5 flex items-center justify-center rounded text-text/50 hover:bg-hover transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
@@ -115,7 +116,7 @@ watch(() => documentStore.currentDoc, () => {
           @click="handleCollapseAll"
           title="收起文件夹"
         >
-          <ChevronsUpDown class="w-3 h-3" />
+          <ChevronsUpDown class="3.5 3.5" />
         </button>
       </div>
     </div>
@@ -124,5 +125,15 @@ watch(() => documentStore.currentDoc, () => {
     <div class="flex-1 overflow-y-auto px-2">
       <DocTree :create-mode="createMode" @cancel-create="handleCancelCreate" />
     </div>
+
+    <!-- 删除确认弹窗 -->
+    <ConfirmDialog
+      :open="documentStore.pendingRemoveId !== null"
+      title="确认移除"
+      :description="`确定要移除文件夹「${documentStore.pendingRemoveName}」吗？其中的所有文件将从列表中移除。`"
+      @confirm="documentStore.doConfirmRemove()"
+      @cancel="documentStore.doCancelRemove()"
+      @update:open="!$event && documentStore.doCancelRemove()"
+    />
   </aside>
 </template>
