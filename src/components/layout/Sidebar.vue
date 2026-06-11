@@ -4,7 +4,7 @@ import DocTree from '@/components/sidebar/DocTree.vue'
 import { useDocumentStore } from '@/stores/documentStore'
 import { useSearchStore } from '@/stores/searchStore'
 import { openFileDialog } from '@/services/tauriService'
-import { FolderPlus, FilePlus, ChevronsUpDown, Star, FileText, Search } from 'lucide-vue-next'
+import { FolderPlus, FilePlus, Plus, ChevronsUpDown, Star, FileText, Search } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 
@@ -106,7 +106,7 @@ watch(() => documentStore.currentDoc, () => {
           @click="handleCreateMode('file')"
           title="新建文件"
         >
-          <FilePlus class="w-3.5 h-3.5" />
+          <Plus class="w-3.5 h-3.5" />
         </button>
         <button
           class="h-5 w-5 flex items-center justify-center rounded text-text/50 hover:bg-hover transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
