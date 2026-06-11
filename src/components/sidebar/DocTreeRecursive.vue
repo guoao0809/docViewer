@@ -121,7 +121,7 @@ function countDocs(doc: DocMeta): number {
         'text-text hover:bg-hover': !isActive(doc.id),
         // 'ring-1 ring-primary/40': isSelected(doc.id) && !isActive(doc.id),
       }"
-      :style="{ paddingLeft: (depth * 16 + 8) + 'px' }"
+      :style="{ paddingLeft: (depth * 20 + 8) + 'px' }"
       @click="handleClick(doc)"
     >
       <template v-if="doc.children">
@@ -144,7 +144,7 @@ function countDocs(doc: DocMeta): number {
       </template>
       <template v-else>
         <div
-          class="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold text-white shrink-0 ml-5"
+          class="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold text-white shrink-0 ml-3.5"
           :class="getFileTypeBadge(doc.name).bgColor"
         >
           {{ getFileTypeBadge(doc.name).letter }}
@@ -170,7 +170,7 @@ function countDocs(doc: DocMeta): number {
     <template v-if="isCreating && doc.children">
       <div
         class="flex items-center gap-2 py-1"
-        :style="{ paddingLeft: ((depth + 1) * 16 + 8) + 'px' }"
+        :style="{ paddingLeft: ((depth + 1) * 20 + 8) + 'px' }"
       >
         <div class="w-5 h-5 rounded-md border border-dashed border-primary/50 flex items-center justify-center shrink-0">
           <span class="text-[10px] text-primary/50">
