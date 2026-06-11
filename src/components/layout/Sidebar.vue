@@ -38,8 +38,6 @@ function handleNavClick(key: string) {
 
 function handleCreateMode(mode: 'file' | 'folder') {
   if (!documentStore.selectedNodeId) return
-  documentStore.expandedDirs.add(documentStore.selectedNodeId)
-  documentStore.expandedDirs = new Set(documentStore.expandedDirs)
   createMode.value = mode
 }
 
@@ -100,7 +98,7 @@ watch(() => documentStore.currentDoc, () => {
           @click="handleCreateMode('folder')"
           title="新建文件夹"
         >
-          <FolderPlus class="w-3.6 h-3.6" />
+          <FolderPlus class="w-3.5 h-3.5" />
         </button>
         <button
           class="h-5 w-5 flex items-center justify-center rounded text-text/50 hover:bg-hover transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
@@ -116,7 +114,7 @@ watch(() => documentStore.currentDoc, () => {
           @click="handleCollapseAll"
           title="收起文件夹"
         >
-          <ChevronsUpDown class="3.5 3.5" />
+          <ChevronsUpDown class="w-3.5 h-3.5" />
         </button>
       </div>
     </div>
