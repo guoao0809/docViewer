@@ -130,10 +130,9 @@ watch(() => documentStore.currentDoc, () => {
     <ConfirmDialog
       :open="documentStore.pendingRemoveId !== null"
       title="确认移除"
-      :description="`确定要移除文件夹「${documentStore.pendingRemoveName}」吗？其中的所有文件将从列表中移除。`"
+      :description="`确定要移除文件夹「${documentStore.pendingRemoveName}」吗？`"
       @confirm="documentStore.doConfirmRemove()"
       @cancel="documentStore.doCancelRemove()"
-      @update:open="!$event && documentStore.doCancelRemove()"
     />
   </aside>
 </template>
