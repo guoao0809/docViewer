@@ -47,7 +47,9 @@ const isRoot = computed(() => props.depth === 0 && props.doc.children)
 
 function handleRemove(event: Event) {
   event.stopPropagation()
-  documentStore.doRemoveRootFolder(props.doc.id)
+  if (confirm(`确定要移除文件夹「${props.doc.name}」吗？`)) {
+    documentStore.doRemoveRootFolder(props.doc.id)
+  }
 }
 
 function getCreateTargetPath(): string {
