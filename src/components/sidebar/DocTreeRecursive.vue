@@ -21,7 +21,13 @@ const newName = ref('')
 const inputRef = ref<HTMLInputElement | null>(null)
 const isCreating = computed(() => {
   if (!props.createMode) return false
-  return documentStore.selectedNodeId === props.doc.id
+  // 文件夹被选中 → 在其下创建
+  if (documentStore.selectedNodeId === props.doc.id && props.doc.children) return true
+  // 文件被选中 → 在其父文件夹下创建
+  if (props.doc.children) {
+    return props.doc.children.some(c => c.id === documentStore.selectedNodeId && !c.children)
+  }
+  return false
 })
 
 function isExpanded(id: string) { return documentStore.expandedDirs.has(id) }
@@ -111,8 +117,9 @@ function countDocs(doc: DocMeta): number {
       :data-docid="doc.id"
       :class="{
         'bg-active text-title': isActive(doc.id),
+        'bg-hover':isSelected(doc.id) && !isActive(doc.id),
         'text-text hover:bg-hover': !isActive(doc.id),
-        'ring-1 ring-primary/40': isSelected(doc.id) && !isActive(doc.id),
+        // 'ring-1 ring-primary/40': isSelected(doc.id) && !isActive(doc.id),
       }"
       :style="{ paddingLeft: (depth * 16 + 8) + 'px' }"
       @click="handleClick(doc)"
