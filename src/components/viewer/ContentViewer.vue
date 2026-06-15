@@ -3,7 +3,7 @@ import { ref, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useDocumentStore } from '@/stores/documentStore'
 import { useSearchStore } from '@/stores/searchStore'
 import { openFileDialog, writeDocument } from '@/services/tauriService'
-import { FileText, Edit3, Eye, Image } from 'lucide-vue-next'
+import { FileText, Edit3, Eye, RotateCw, ZoomIn, ZoomOut, Maximize } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 
 import { EditorView, keymap, lineNumbers } from '@codemirror/view'
@@ -18,6 +18,15 @@ const viewMode = ref(true)
 const editorContainer = ref<HTMLDivElement | null>(null)
 const editorView = ref<EditorView | null>(null)
 let saveTimer: ReturnType<typeof setTimeout> | null = null
+
+// 图片查看器状态
+const imgZoom = ref(1)
+const imgRotate = ref(0)
+function imgZoomIn() { imgZoom.value = Math.min(imgZoom.value + 0.25, 5) }
+function imgZoomOut() { imgZoom.value = Math.max(imgZoom.value - 0.25, 0.1) }
+function imgRotateLeft() { imgRotate.value -= 90 }
+function imgRotateRight() { imgRotate.value += 90 }
+function imgReset() { imgZoom.value = 1; imgRotate.value = 0 }
 
 /** 根据文件类型返回 CodeMirror 语言扩展 */
 function getLanguageExtension(fileName: string) {
@@ -219,13 +228,38 @@ function handleContentClick() {
     </div>
 
     <!-- Image viewer -->
-    <div v-if="documentStore.currentDoc.meta.type === 'image'" class="flex-1 flex items-center justify-center bg-bg overflow-hidden p-4">
-      <img
-        :src="documentStore.currentDoc.raw"
-        :alt="documentStore.currentDoc.meta.name"
-        class="max-w-full max-h-full object-contain rounded-lg shadow-lg"
-      />
-    </div>
+    <template v-if="documentStore.currentDoc.meta.type === 'image'">
+      <!-- 图片工具栏 -->
+      <div class="flex items-center gap-1 px-4 h-10 shrink-0 border-b border-border bg-bg">
+        <span class="text-xs text-text/40 mr-2">{{ Math.round(imgZoom * 100) }}%</span>
+        <button class="h-7 w-7 flex items-center justify-center rounded text-text/60 hover:bg-hover hover:text-text transition-colors" @click="imgZoomOut" title="缩小">
+          <ZoomOut class="w-4 h-4" />
+        </button>
+        <button class="h-7 w-7 flex items-center justify-center rounded text-text/60 hover:bg-hover hover:text-text transition-colors" @click="imgZoomIn" title="放大">
+          <ZoomIn class="w-4 h-4" />
+        </button>
+        <div class="w-px h-4 bg-border mx-1" />
+        <button class="h-7 w-7 flex items-center justify-center rounded text-text/60 hover:bg-hover hover:text-text transition-colors" @click="imgRotateLeft" title="左旋转">
+          <RotateCw class="w-4 h-4 scale-x-[-1]" />
+        </button>
+        <button class="h-7 w-7 flex items-center justify-center rounded text-text/60 hover:bg-hover hover:text-text transition-colors" @click="imgRotateRight" title="右旋转">
+          <RotateCw class="w-4 h-4" />
+        </button>
+        <div class="w-px h-4 bg-border mx-1" />
+        <button class="h-7 w-7 flex items-center justify-center rounded text-text/60 hover:bg-hover hover:text-text transition-colors" @click="imgReset" title="重置">
+          <Maximize class="w-3.5 h-3.5" />
+        </button>
+      </div>
+      <!-- 图片内容 -->
+      <div class="flex-1 flex items-center justify-center bg-bg overflow-auto p-4">
+        <img
+          :src="documentStore.currentDoc.raw"
+          :alt="documentStore.currentDoc.meta.name"
+          :style="{ transform: `scale(${imgZoom}) rotate(${imgRotate}deg)`, transition: 'transform 0.2s' }"
+          class="rounded-lg shadow-lg"
+        />
+      </div>
+    </template>
 
     <!-- View mode -->
     <div v-if="viewMode" class="flex-1 overflow-y-auto" @click="handleContentClick">
