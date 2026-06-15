@@ -53,6 +53,16 @@ export async function getFileMetadata(path: string): Promise<FileMeta> {
   }
 }
 
+/** Read an image file as base64 string */
+export async function readImageBase64(path: string): Promise<string> {
+  try {
+    return await invoke<string>('read_image_base64', { path })
+  } catch (error) {
+    console.error('Failed to read image:', error)
+    throw error
+  }
+}
+
 /** Write content to a file via the Rust backend command */
 export async function writeDocument(path: string, content: string): Promise<void> {
   try {

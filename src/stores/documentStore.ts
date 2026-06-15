@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch, computed } from 'vue'
 import type { DocMeta, DocContent } from '@/types/document'
-import { scanDirectory, readDocument, getFileMetadata } from '@/services/tauriService'
+import { scanDirectory, readDocument, getFileMetadata, readImageBase64 } from '@/services/tauriService'
 import { parseMarkdown } from '@/services/markdownService'
 import { useSearchStore } from './searchStore'
 
@@ -179,9 +179,13 @@ export const useDocumentStore = defineStore('document', () => {
       meta.lastOpen = Date.now()
       meta.visitCount++
 
-      // 图片文件：直接显示，不解析文本
+      // 图片文件：读取 base64 用于显示
       if (meta.type === 'image') {
-        currentDoc.value = { meta, raw: '', html: '', toc: [] }
+        const ext = meta.name.split('.').pop()?.toLowerCase() || 'png'
+        const mimeMap: Record<string, string> = { jpg: 'jpeg', jpeg: 'jpeg', png: 'png', gif: 'gif', webp: 'webp', svg: 'svg+xml', bmp: 'bmp', ico: 'x-icon' }
+        const mime = mimeMap[ext] || 'png'
+        const base64 = await readImageBase64(id)
+        currentDoc.value = { meta, raw: `data:image/${mime};base64,${base64}`, html: '', toc: [] }
         persistState()
         return
       }

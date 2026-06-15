@@ -5,7 +5,6 @@ import { useSearchStore } from '@/stores/searchStore'
 import { openFileDialog, writeDocument } from '@/services/tauriService'
 import { FileText, Edit3, Eye, Image } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
-import { convertFileSrc } from '@tauri-apps/api/core'
 
 import { EditorView, keymap, lineNumbers } from '@codemirror/view'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
@@ -222,7 +221,7 @@ function handleContentClick() {
     <!-- Image viewer -->
     <div v-if="documentStore.currentDoc.meta.type === 'image'" class="flex-1 flex items-center justify-center bg-bg overflow-hidden p-4">
       <img
-        :src="convertFileSrc(documentStore.currentDoc.meta.path)"
+        :src="documentStore.currentDoc.raw"
         :alt="documentStore.currentDoc.meta.name"
         class="max-w-full max-h-full object-contain rounded-lg shadow-lg"
       />
