@@ -171,7 +171,6 @@ export const useDocumentStore = defineStore('document', () => {
     try {
       const meta = findDocById(id, docTree.value)
       if (!meta) throw new Error(`Document not found: ${id}`)
-      const raw = await readDocument(id)
       try {
         const fileMeta = await getFileMetadata(id)
         meta.size = fileMeta.size
@@ -179,6 +178,15 @@ export const useDocumentStore = defineStore('document', () => {
       } catch { /* ignore */ }
       meta.lastOpen = Date.now()
       meta.visitCount++
+
+      // 图片文件：直接显示，不解析文本
+      if (meta.type === 'image') {
+        currentDoc.value = { meta, raw: '', html: '', toc: [] }
+        persistState()
+        return
+      }
+
+      const raw = await readDocument(id)
       const content = await parseMarkdown(raw, meta)
       currentDoc.value = content
       persistState()

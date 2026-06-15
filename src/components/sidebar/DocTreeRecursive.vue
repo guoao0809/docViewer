@@ -99,6 +99,9 @@ function getFileTypeBadge(name: string): FileTypeBadge {
       return { letter: 'PDF', bgColor: 'bg-red-500' }
     case 'sketch':
       return { letter: 'SK', bgColor: 'bg-gray-400' }
+    case 'png': case 'jpg': case 'jpeg': case 'gif':
+    case 'webp': case 'svg': case 'bmp': case 'ico':
+      return { letter: 'IMG', bgColor: 'bg-purple-500' }
     default:
       return { letter: ext.slice(0, 3).toUpperCase(), bgColor: 'bg-green-500' }
   }

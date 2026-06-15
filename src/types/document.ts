@@ -2,7 +2,7 @@ export interface DocMeta {
   id: string
   name: string
   path: string
-  type: 'markdown' | 'text' | 'code'
+  type: 'markdown' | 'text' | 'code' | 'image'
   size: number
   modified: number
   favorite: boolean

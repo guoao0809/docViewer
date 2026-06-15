@@ -25,6 +25,16 @@ fn detect_file_type(name: &str) -> String {
         || lower.ends_with(".csv")
     {
         "code".to_string()
+    } else if lower.ends_with(".png")
+        || lower.ends_with(".jpg")
+        || lower.ends_with(".jpeg")
+        || lower.ends_with(".gif")
+        || lower.ends_with(".webp")
+        || lower.ends_with(".svg")
+        || lower.ends_with(".bmp")
+        || lower.ends_with(".ico")
+    {
+        "image".to_string()
     } else {
         "text".to_string()
     }
@@ -32,7 +42,8 @@ fn detect_file_type(name: &str) -> String {
 
 fn is_supported_file(name: &str) -> bool {
     let lower = name.to_lowercase();
-    let exts = ["md", "markdown", "txt", "json", "yaml", "yml", "toml", "xml", "csv"];
+    let exts = ["md", "markdown", "txt", "json", "yaml", "yml", "toml", "xml", "csv",
+                "png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "ico"];
     exts.iter().any(|e| lower.ends_with(&format!(".{}", e)))
 }
 

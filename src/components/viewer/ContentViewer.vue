@@ -3,8 +3,9 @@ import { ref, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useDocumentStore } from '@/stores/documentStore'
 import { useSearchStore } from '@/stores/searchStore'
 import { openFileDialog, writeDocument } from '@/services/tauriService'
-import { FileText, Edit3, Eye, Copy, MoreHorizontal } from 'lucide-vue-next'
+import { FileText, Edit3, Eye, Image } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
+import { convertFileSrc } from '@tauri-apps/api/core'
 
 import { EditorView, keymap, lineNumbers } from '@codemirror/view'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
@@ -200,6 +201,7 @@ function handleContentClick() {
         {{ documentStore.currentDoc.meta.name }}
       </span>
       <Button
+        v-if="documentStore.currentDoc.meta.type !== 'image'"
         variant="ghost"
         size="icon"
         class="text-text/200 hover:bg-hover"
@@ -215,6 +217,15 @@ function handleContentClick() {
       <!-- <Button variant="ghost" size="icon" class="text-text/50 hover:bg-hover" title="更多">
         <MoreHorizontal class="w-4 h-4" />
       </Button> -->
+    </div>
+
+    <!-- Image viewer -->
+    <div v-if="documentStore.currentDoc.meta.type === 'image'" class="flex-1 flex items-center justify-center bg-bg overflow-hidden p-4">
+      <img
+        :src="convertFileSrc(documentStore.currentDoc.meta.path)"
+        :alt="documentStore.currentDoc.meta.name"
+        class="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+      />
     </div>
 
     <!-- View mode -->
