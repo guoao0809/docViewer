@@ -117,6 +117,10 @@ fn scan_dir_recursive(path: &Path, depth: u32) -> Result<Vec<serde_json::Value>,
 
         if file_type.is_dir() {
             let children = scan_dir_recursive(&entry_path, depth + 1)?;
+            // 跳过不含任何支持文件的空文件夹
+            if children.is_empty() {
+                continue;
+            }
             entries.push(serde_json::json!({
                 "id": entry_path.to_string_lossy().to_string(),
                 "name": file_name,
