@@ -111,6 +111,19 @@ function countDocs(doc: DocMeta): number {
   if (!doc.children) return 1
   return doc.children.reduce((sum, child) => sum + countDocs(child), 0)
 }
+
+function truncateMiddle(name: string, maxLen = 28): string {
+  if (name.length <= maxLen) return name
+  const dot = name.lastIndexOf('.')
+  if (dot <= 0 || dot < maxLen - 12) {
+    // 无后缀或后缀过长，从头截断
+    return name.slice(0, maxLen - 3) + '...'
+  }
+  const ext = name.slice(dot)
+  const base = name.slice(0, dot)
+  const keep = Math.max(6, maxLen - ext.length - 3)
+  return base.slice(0, keep) + '...' + base.slice(-4) + ext
+}
 </script>
 
 <template>
@@ -153,7 +166,7 @@ function countDocs(doc: DocMeta): number {
         >
           {{ getFileTypeBadge(doc.name).letter }}
         </div>
-        <span class="truncate">{{ doc.name }}</span>
+        <span class="truncate" :title="doc.name">{{ truncateMiddle(doc.name) }}</span>
       </template>
     </div>
 
