@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useSearchStore } from '@/stores/searchStore'
 import { useSettingStore } from '@/stores/settingStore'
 import { useDocumentStore } from '@/stores/documentStore'
 import { openFileDialog } from '@/services/tauriService'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { Search, FolderOpen, Sun, Moon, Minus, Square, X } from 'lucide-vue-next'
+import { Search, FolderOpen, Sun, Moon, Minus, Square, X, Pin } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 
 const searchStore = useSearchStore()
@@ -20,6 +21,17 @@ async function handleOpenFolder() {
 function handleSearchClick() { searchStore.doOpenSearch() }
 function handleToggleTheme() {
   settingStore.doToggleTheme()
+}
+
+const isPinned = ref(false)
+async function handleTogglePin() {
+  isPinned.value = !isPinned.value
+  try {
+    await appWindow.setAlwaysOnTop(isPinned.value)
+  } catch (e) {
+    console.error('Failed to toggle pin:', e)
+    isPinned.value = !isPinned.value
+  }
 }
 
 function handleHeaderMouseDown(e: MouseEvent) {
@@ -52,6 +64,10 @@ function handleHeaderMouseDown(e: MouseEvent) {
     <!-- 右侧: 操作按钮 -->
     <div class="flex items-center gap-1 shrink-0">
       <div class="flex items-center ml-1" @mousedown.stop>
+        <Button variant="ghost" size="icon" class="text-text hover:bg-hover" :class="{ 'text-primary bg-active': isPinned }"
+          @click="handleTogglePin" :title="isPinned ? '取消置顶' : '置顶窗口'">
+          <Pin class="w-4 h-4" :class="{ 'fill-current': isPinned }" />
+        </Button>
         <Button variant="ghost" size="icon" class="text-text hover:bg-hover" @click="handleToggleTheme"
           :title="settingStore.theme === 'dark' ? '切换到浅色主题' : '切换到深色主题'">
           <Sun v-if="settingStore.theme === 'dark'" class="w-4 h-4" />
