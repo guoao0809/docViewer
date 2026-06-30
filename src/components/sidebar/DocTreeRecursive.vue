@@ -112,7 +112,7 @@ function countDocs(doc: DocMeta): number {
   return doc.children.reduce((sum, child) => sum + countDocs(child), 0)
 }
 
-function truncateMiddle(name: string, maxLen = 28): string {
+function truncateMiddle(name: string, maxLen = 16): string {
   if (name.length <= maxLen) return name
   const dot = name.lastIndexOf('.')
   if (dot <= 0 || dot < maxLen - 12) {
@@ -159,7 +159,7 @@ function truncateMiddle(name: string, maxLen = 28): string {
         </button>
       </template>
       <template v-else>
-        <div class="w-3.5 h-3.5 shrink-0" />
+        <div class="w-6 h-3.5 shrink-0" />
         <div
           class="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold text-white shrink-0"
           :class="getFileTypeBadge(doc.name).bgColor"

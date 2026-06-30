@@ -23,11 +23,9 @@ function handleToggleTheme() {
 }
 
 function handleHeaderMouseDown(e: MouseEvent) {
-  if (e.button !== 0) return
-  // 点击交互元素（搜索框、按钮）时不触发拖拽
-  const target = e.target as HTMLElement
-  if (target.closest('button, [data-no-drag], .cursor-pointer')) return
-  try { appWindow.startDragging() } catch { /* ignore */ }
+  if (e.button === 0) {
+    try { appWindow.startDragging() } catch { /* ignore */ }
+  }
 }
 </script>
 
@@ -43,8 +41,8 @@ function handleHeaderMouseDown(e: MouseEvent) {
     </div>
 
     <!-- 中间: 搜索入口 -->
-    <div class="flex-1 max-w-2xl mx-6 cursor-pointer" @click="handleSearchClick">
-      <div class="flex items-center gap-2 h-9 px-4 rounded-lg text-base bg-bg border border-border text-text">
+    <div class="flex-1 max-w-2xl mx-6 cursor-pointer" @mousedown.stop>
+      <div class="flex items-center gap-2 h-9 px-4 rounded-lg text-base bg-bg border border-border text-text" @click.stop="handleSearchClick">
         <Search class="w-4 h-4 shrink-0 opacity-50" />
         <span class="opacity-50">搜索文档...</span>
         <kbd class="ml-auto text-sm px-2 py-0.5 rounded bg-panel border border-border opacity-40 font-mono">Ctrl+K</kbd>

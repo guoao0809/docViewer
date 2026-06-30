@@ -109,7 +109,7 @@ watch(() => documentStore.currentDoc?.meta.id, () => {
   if (!viewMode.value && editorView.value) {
     const content = editorView.value.state.doc.toString()
     const path = documentStore.currentDoc!.meta.path
-    writeDocument(path, content).catch(() => {})
+    writeDocument(path, content).catch(() => { })
     editorView.value.destroy()
     editorView.value = null
     if (saveTimer) { clearTimeout(saveTimer); saveTimer = null }
@@ -208,14 +208,8 @@ function handleContentClick() {
       <span class="text-lg font-semibold truncate flex-1 text-title">
         {{ documentStore.currentDoc.meta.name }}
       </span>
-      <Button
-        v-if="documentStore.currentDoc.meta.type !== 'image'"
-        variant="ghost"
-        size="icon"
-        class="text-text/200 hover:bg-hover"
-        :title="viewMode ? '编辑' : '查看'"
-        @click="toggleEditMode"
-      >
+      <Button v-if="documentStore.currentDoc.meta.type !== 'image'" variant="ghost" size="icon"
+        class="text-text/200 hover:bg-hover" :title="viewMode ? '编辑' : '查看'" @click="toggleEditMode">
         <Edit3 v-if="viewMode" class="w-4 h-4" />
         <Eye v-else class="w-4 h-4" />
       </Button>
@@ -232,41 +226,50 @@ function handleContentClick() {
       <!-- 图片工具栏 -->
       <div class="flex items-center gap-1 px-4 h-10 shrink-0 border-b border-border bg-bg">
         <span class="text-xs text-text/40 mr-2">{{ Math.round(imgZoom * 100) }}%</span>
-        <button class="h-7 w-7 flex items-center justify-center rounded text-text/60 hover:bg-hover hover:text-text transition-colors" @click="imgZoomOut" title="缩小">
+        <button
+          class="h-7 w-7 flex items-center justify-center rounded text-text/60 hover:bg-hover hover:text-text transition-colors"
+          @click="imgZoomOut" title="缩小">
           <ZoomOut class="w-4 h-4" />
         </button>
-        <button class="h-7 w-7 flex items-center justify-center rounded text-text/60 hover:bg-hover hover:text-text transition-colors" @click="imgZoomIn" title="放大">
+        <button
+          class="h-7 w-7 flex items-center justify-center rounded text-text/60 hover:bg-hover hover:text-text transition-colors"
+          @click="imgZoomIn" title="放大">
           <ZoomIn class="w-4 h-4" />
         </button>
         <div class="w-px h-4 bg-border mx-1" />
-        <button class="h-7 w-7 flex items-center justify-center rounded text-text/60 hover:bg-hover hover:text-text transition-colors" @click="imgRotateLeft" title="左旋转">
+        <button
+          class="h-7 w-7 flex items-center justify-center rounded text-text/60 hover:bg-hover hover:text-text transition-colors"
+          @click="imgRotateLeft" title="左旋转">
           <RotateCw class="w-4 h-4 scale-x-[-1]" />
         </button>
-        <button class="h-7 w-7 flex items-center justify-center rounded text-text/60 hover:bg-hover hover:text-text transition-colors" @click="imgRotateRight" title="右旋转">
+        <button
+          class="h-7 w-7 flex items-center justify-center rounded text-text/60 hover:bg-hover hover:text-text transition-colors"
+          @click="imgRotateRight" title="右旋转">
           <RotateCw class="w-4 h-4" />
         </button>
         <div class="w-px h-4 bg-border mx-1" />
-        <button class="h-7 w-7 flex items-center justify-center rounded text-text/60 hover:bg-hover hover:text-text transition-colors" @click="imgReset" title="重置">
+        <button
+          class="h-7 w-7 flex items-center justify-center rounded text-text/60 hover:bg-hover hover:text-text transition-colors"
+          @click="imgReset" title="重置">
           <Maximize class="w-3.5 h-3.5" />
         </button>
       </div>
       <!-- 图片内容 -->
       <div class="flex-1 flex items-center justify-center bg-bg overflow-auto p-4">
-        <img
-          :src="documentStore.currentDoc.raw"
-          :alt="documentStore.currentDoc.meta.name"
+        <img :src="documentStore.currentDoc.raw" :alt="documentStore.currentDoc.meta.name"
           :style="{ transform: `scale(${imgZoom}) rotate(${imgRotate}deg)`, transition: 'transform 0.2s' }"
-          class="rounded-lg shadow-lg"
-        />
+          class="rounded-lg shadow-lg" />
       </div>
     </template>
+    <template v-else>
+      <!-- View mode -->
+      <div v-if="viewMode" class="flex-1 overflow-y-auto" @click="handleContentClick">
+        <div class="markdown-content" v-html="documentStore.currentDoc.html" />
+      </div>
 
-    <!-- View mode -->
-    <div v-if="viewMode" class="flex-1 overflow-y-auto" @click="handleContentClick">
-      <div class="markdown-content" v-html="documentStore.currentDoc.html" />
-    </div>
+      <!-- Edit mode -->
+      <div v-else ref="editorContainer" class="flex-1 overflow-hidden bg-bg" />
+    </template>
 
-    <!-- Edit mode -->
-    <div v-else ref="editorContainer" class="flex-1 overflow-hidden bg-bg" />
   </div>
 </template>
