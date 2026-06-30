@@ -23,9 +23,11 @@ function handleToggleTheme() {
 }
 
 function handleHeaderMouseDown(e: MouseEvent) {
-  if (e.button === 0) {
-    try { appWindow.startDragging() } catch { /* ignore */ }
-  }
+  if (e.button !== 0) return
+  // 点击交互元素（搜索框、按钮）时不触发拖拽
+  const target = e.target as HTMLElement
+  if (target.closest('button, [data-no-drag], .cursor-pointer')) return
+  try { appWindow.startDragging() } catch { /* ignore */ }
 }
 </script>
 
