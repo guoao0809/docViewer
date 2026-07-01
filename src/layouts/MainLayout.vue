@@ -5,6 +5,7 @@ import AppHeader from '@/components/layout/AppHeader.vue'
 import Sidebar from '@/components/layout/Sidebar.vue'
 import DocumentList from '@/components/layout/DocumentList.vue'
 import StatusBar from '@/components/layout/StatusBar.vue'
+import { PanelLeftOpen } from 'lucide-vue-next'
 
 const settingStore = useSettingStore()
 const activeNav = ref('all')
@@ -61,9 +62,8 @@ function onDragEnd() {
     <div class="flex flex-1 overflow-hidden border-t border-border">
       <!-- Left: Navigation sidebar -->
       <Sidebar
-        v-show="!settingStore.sidebarCollapsed"
-        class="shrink-0 overflow-hidden"
-        :style="{ width: sidebarWidth + 'px' }"
+        class="shrink-0 overflow-hidden transition-[width] duration-150 ease-out"
+        :style="{ width: (settingStore.sidebarCollapsed ? 52 : sidebarWidth) + 'px' }"
         :active-nav="activeNav"
         @nav-change="handleNavChange"
       />
@@ -77,6 +77,7 @@ function onDragEnd() {
 
       <!-- Middle: Document list -->
       <DocumentList
+        v-if="!settingStore.docListCollapsed"
         class="shrink-0 overflow-hidden"
         :style="{ width: docListWidth + 'px' }"
         :active-nav="activeNav"
@@ -84,13 +85,23 @@ function onDragEnd() {
 
       <!-- DocList resize handle -->
       <div
+        v-show="!settingStore.docListCollapsed"
         class="shrink-0 w-1 cursor-col-resize hover:bg-primary/30 active:bg-primary/50 transition-colors z-10"
         @mousedown="onDragStart('doclist')"
       />
 
       <!-- Right: Content viewer -->
-      <main class="flex-1 min-w-0 overflow-hidden">
+      <main class="relative flex-1 min-w-0 overflow-hidden">
         <slot />
+        <!-- 文档列表收起时：底部悬浮的展开按钮 -->
+        <button
+          v-if="settingStore.docListCollapsed"
+          class="absolute bottom-3 left-3 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-colors hover:bg-primary/90"
+          title="展开文档列表"
+          @click="settingStore.doToggleDocList()"
+        >
+          <PanelLeftOpen class="h-5 w-5" />
+        </button>
       </main>
     </div>
 

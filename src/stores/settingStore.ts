@@ -8,6 +8,7 @@ export const useSettingStore = defineStore('setting', () => {
   const sidebarWidth = ref(Number(localStorage.getItem('docviewer-sidebar-width')) || 240)
   const tocPanelWidth = ref(Number(localStorage.getItem('docviewer-toc-width')) || 220)
   const sidebarCollapsed = ref(localStorage.getItem('docviewer-sidebar-collapsed') === 'true')
+  const docListCollapsed = ref(localStorage.getItem('docviewer-doclist-collapsed') === 'true')
   const fontSize = ref(Number(localStorage.getItem('docviewer-font-size')) || 14)
 
   function applyTheme(t: Theme) {
@@ -21,12 +22,14 @@ export const useSettingStore = defineStore('setting', () => {
   }
   function doSetSidebarWidth(width: number) { sidebarWidth.value = Math.max(180, Math.min(400, width)) }
   function doToggleSidebar() { sidebarCollapsed.value = !sidebarCollapsed.value }
+  function doToggleDocList() { docListCollapsed.value = !docListCollapsed.value }
 
   watch(theme, (v) => localStorage.setItem('docviewer-theme', v))
   watch(sidebarWidth, (v) => localStorage.setItem('docviewer-sidebar-width', String(v)))
   watch(tocPanelWidth, (v) => localStorage.setItem('docviewer-toc-width', String(v)))
   watch(sidebarCollapsed, (v) => localStorage.setItem('docviewer-sidebar-collapsed', String(v)))
+  watch(docListCollapsed, (v) => localStorage.setItem('docviewer-doclist-collapsed', String(v)))
   watch(fontSize, (v) => localStorage.setItem('docviewer-font-size', String(v)))
 
-  return { theme, sidebarWidth, tocPanelWidth, sidebarCollapsed, fontSize, doToggleTheme, doSetSidebarWidth, doToggleSidebar }
+  return { theme, sidebarWidth, tocPanelWidth, sidebarCollapsed, docListCollapsed, fontSize, doToggleTheme, doSetSidebarWidth, doToggleSidebar, doToggleDocList }
 })

@@ -137,7 +137,7 @@ function truncateMiddle(name: string, maxLen = 16): string {
         'text-text hover:bg-hover': !isActive(doc.id),
         // 'ring-1 ring-primary/40': isSelected(doc.id) && !isActive(doc.id),
       }"
-      :style="{ paddingLeft: (depth * 20 + 8) + 'px' }"
+      :style="{ paddingLeft: (depth === 0 ? 0 : (depth * 20 + (doc.children ? 10 : 0) + (depth >= 2 && !doc.children ? 10 : 0))) + 'px' }"
       @click="handleClick(doc)"
     >
       <template v-if="doc.children">

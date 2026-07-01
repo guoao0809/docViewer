@@ -53,7 +53,13 @@ export function useKeyboard() {
       return
     }
 
-    if (isMod && event.key === '\\') {
+    if (isMod && event.shiftKey && event.code === 'Backslash') {
+      event.preventDefault()
+      settingStore.doToggleDocList()
+      return
+    }
+
+    if (isMod && !event.shiftKey && event.key === '\\') {
       event.preventDefault()
       settingStore.doToggleSidebar()
       return
