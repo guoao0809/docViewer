@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, nextTick, onBeforeUnmount } from 'vue'
+import { ref, watch, nextTick, onBeforeUnmount, computed } from 'vue'
 import { useDocumentStore } from '@/stores/documentStore'
 import { useSearchStore } from '@/stores/searchStore'
 import { openFileDialog, writeDocument } from '@/services/tauriService'
@@ -43,10 +43,10 @@ function getLanguageExtension(fileName: string) {
 
 const pdfPlugins = [pdfPlugin({ workerSrc: pdfWorkerSrc })]
 
-function pdfBlob(): Blob {
+const pdfBlob = computed(() => {
   const bytes = documentStore.currentDoc?.bytes
   return new Blob([bytes ?? new ArrayBuffer(0)], { type: 'application/pdf' })
-}
+})
 
 /** 切换到编辑模式 */
 async function enterEditMode() {
@@ -281,7 +281,7 @@ function handleContentError(error: unknown) {
     <template v-else-if="documentStore.currentDoc.meta.type === 'pdf'">
       <div class="flex-1 min-h-0 overflow-hidden bg-bg">
         <OpenFileViewer
-          :file="pdfBlob()"
+          :file="pdfBlob"
           :file-name="documentStore.currentDoc.meta.name"
           :plugins="pdfPlugins"
           width="100%"

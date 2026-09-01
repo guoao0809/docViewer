@@ -14,11 +14,16 @@ const MAX_FILE_SIZE = 1_000_000 // 1MB: skip files larger than this
 let miniSearch: MiniSearch<IndexDoc> | null = null
 let indexedDocIds: Set<string> | null = null
 
+const INDEXABLE_TYPES = new Set(['markdown', 'text', 'code'])
+
 function flattenDocs(docs: DocMeta[]): DocMeta[] {
   const result: DocMeta[] = []
   for (const doc of docs) {
-    if (!doc.children) result.push(doc)
-    if (doc.children) result.push(...flattenDocs(doc.children))
+    if (!doc.children) {
+      if (INDEXABLE_TYPES.has(doc.type)) result.push(doc)
+    } else {
+      result.push(...flattenDocs(doc.children))
+    }
   }
   return result
 }
