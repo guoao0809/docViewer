@@ -2,7 +2,7 @@ export interface DocMeta {
   id: string
   name: string
   path: string
-  type: 'markdown' | 'text' | 'code' | 'image'
+  type: 'markdown' | 'text' | 'code' | 'image' | 'pdf'
   size: number
   modified: number
   tags: string[]
@@ -14,6 +14,7 @@ export interface DocContent {
   raw: string
   html: string
   toc: TocItem[]
+  bytes?: ArrayBuffer
 }
 
 export interface TocItem {

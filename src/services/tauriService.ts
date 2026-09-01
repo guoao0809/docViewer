@@ -63,6 +63,16 @@ export async function readImageBase64(path: string): Promise<string> {
   }
 }
 
+export async function readFileBytes(path: string): Promise<ArrayBuffer> {
+  try {
+    const arr = await invoke<number[]>('read_file_bytes', { path })
+    return new Uint8Array(arr).buffer
+  } catch (error) {
+    console.error('Failed to read file bytes:', error)
+    throw error
+  }
+}
+
 /** Write content to a file via the Rust backend command */
 export async function writeDocument(path: string, content: string): Promise<void> {
   try {
