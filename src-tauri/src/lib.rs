@@ -36,6 +36,8 @@ fn detect_file_type(name: &str) -> String {
         || lower.ends_with(".ico")
     {
         "image".to_string()
+    } else if lower.ends_with(".pdf") {
+        "pdf".to_string()
     } else {
         "text".to_string()
     }
@@ -44,7 +46,7 @@ fn detect_file_type(name: &str) -> String {
 fn is_supported_file(name: &str) -> bool {
     let lower = name.to_lowercase();
     let exts = ["md", "markdown", "txt", "json", "yaml", "yml", "toml", "xml", "csv",
-                "png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "ico"];
+                "png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "ico", "pdf"];
     exts.iter().any(|e| lower.ends_with(&format!(".{}", e)))
 }
 
@@ -184,6 +186,12 @@ fn read_image_base64(path: String) -> Result<String, String> {
 }
 
 #[tauri::command]
+fn read_file_bytes(path: String) -> Result<Vec<u8>, String> {
+    std::fs::read(&path)
+        .map_err(|e| format!("Failed to read file bytes: {}", e))
+}
+
+#[tauri::command]
 fn write_document(path: String, content: String) -> Result<(), String> {
     std::fs::write(&path, content.as_bytes())
         .map_err(|e| format!("Failed to write file: {}", e))
@@ -282,6 +290,7 @@ pub fn run() {
             read_document,
             get_file_metadata,
             read_image_base64,
+            read_file_bytes,
             write_document,
             create_file,
             create_folder
