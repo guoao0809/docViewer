@@ -71,7 +71,6 @@ async function handleDrop(event: DragEvent) {
 
     <div class="mt-10 flex gap-6 text-sm text-text/25">
       <span><kbd class="bg-panel border border-border rounded px-1.5 py-0.5">Ctrl+K</kbd> 搜索</span>
-      <span><kbd class="bg-panel border border-border rounded px-1.5 py-0.5">Ctrl+D</kbd> 收藏</span>
       <span><kbd class="bg-panel border border-border rounded px-1.5 py-0.5">Ctrl+W</kbd> 关闭</span>
       <span><kbd class="bg-panel border border-border rounded px-1.5 py-0.5">Ctrl+\</kbd> 侧边栏</span>
     </div>

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, watch, computed } from 'vue'
+import { ref, watch } from 'vue'
 import type { DocMeta, DocContent } from '@/types/document'
 import { scanDirectory, readDocument, getFileMetadata, readImageBase64 } from '@/services/tauriService'
 import { parseMarkdown } from '@/services/markdownService'
@@ -9,15 +9,12 @@ const STORAGE_KEY = 'docviewer-state'
 
 interface PersistedDocMeta {
   id: string
-  favorite: boolean
-  lastOpen: number | null
-  visitCount: number
 }
 
 function serializeDocTree(docs: DocMeta[]): PersistedDocMeta[] {
   const result: PersistedDocMeta[] = []
   for (const doc of docs) {
-    result.push({ id: doc.id, favorite: doc.favorite, lastOpen: doc.lastOpen, visitCount: doc.visitCount })
+    result.push({ id: doc.id })
     if (doc.children) result.push(...serializeDocTree(doc.children))
   }
   return result
@@ -27,9 +24,7 @@ function mergePersistedIntoTree(docs: DocMeta[], persisted: Map<string, Persiste
   for (const doc of docs) {
     const p = persisted.get(doc.id)
     if (p) {
-      doc.favorite = p.favorite
-      doc.lastOpen = p.lastOpen
-      doc.visitCount = p.visitCount
+      // Persisted doc metadata is currently identity-only; nothing to merge yet.
     }
     if (doc.children) mergePersistedIntoTree(doc.children, persisted)
   }
@@ -131,10 +126,7 @@ export const useDocumentStore = defineStore('document', () => {
         type: 'text',
         size: 0,
         modified: 0,
-        favorite: false,
         tags: [],
-        lastOpen: null,
-        visitCount: 0,
         children: tree,
       }
       docTree.value = [...docTree.value, rootNode]
@@ -176,8 +168,6 @@ export const useDocumentStore = defineStore('document', () => {
         meta.size = fileMeta.size
         meta.modified = fileMeta.modified
       } catch { /* ignore */ }
-      meta.lastOpen = Date.now()
-      meta.visitCount++
 
       // 图片文件：读取 base64 用于显示
       if (meta.type === 'image') {
@@ -222,15 +212,6 @@ export const useDocumentStore = defineStore('document', () => {
     }
   }
 
-  function getFolderTag(docId: string): string {
-    for (const rootPath of rootPaths.value) {
-      if (docId.startsWith(rootPath.replaceAll('\\', '/')) || docId.startsWith(rootPath)) {
-        return rootPath.replaceAll('\\', '/').split('/').pop() || rootPath
-      }
-    }
-    return ''
-  }
-
   function findDocById(id: string, docs: DocMeta[]): DocMeta | null {
     for (const doc of docs) {
       if (doc.id === id) return doc
@@ -240,24 +221,6 @@ export const useDocumentStore = defineStore('document', () => {
       }
     }
     return null
-  }
-
-  function doToggleFavorite(id: string) {
-    const toggleIn = (docs: DocMeta[]): boolean => {
-      for (const doc of docs) {
-        if (doc.id === id) {
-          doc.favorite = !doc.favorite
-          return true
-        }
-        if (doc.children && toggleIn(doc.children)) return true
-      }
-      return false
-    }
-    toggleIn(docTree.value)
-    if (currentDoc.value && currentDoc.value.meta.id === id) {
-      currentDoc.value.meta.favorite = !currentDoc.value.meta.favorite
-    }
-    persistState()
   }
 
   function doToggleExpanded(id: string) {
@@ -339,24 +302,13 @@ export const useDocumentStore = defineStore('document', () => {
     }
   }
 
-  function getAllFavoriteDocs(docs: DocMeta[]): DocMeta[] {
-    const result: DocMeta[] = []
-    for (const doc of docs) {
-      if (!doc.children && doc.favorite) result.push(doc)
-      if (doc.children) result.push(...getAllFavoriteDocs(doc.children))
-    }
-    return result
-  }
-
-  const favoriteDocs = computed(() => getAllFavoriteDocs(docTree.value))
-
   return {
     docTree, currentDoc, expandedDirs, rootPaths, isLoading,
-    openedDocs, activeDocId, favoriteDocs, selectedNodeId,
+    openedDocs, activeDocId, selectedNodeId,
     pendingRemoveId, pendingRemoveName,
     doRequestRemove, doConfirmRemove, doCancelRemove,
-    doScanDirectory, doLoadDocument, doToggleFavorite, doToggleExpanded,
-    doRemoveRootFolder, doOpenDoc, doRemoveOpenedDoc, getFolderTag,
+    doScanDirectory, doLoadDocument, doToggleExpanded,
+    doRemoveRootFolder, doOpenDoc, doRemoveOpenedDoc,
     doSelectNode, doCollapseAll, getParentPath, doRefreshChildren,
     doCreateFile, doCreateFolder,
     loadPersistedState, persistState,

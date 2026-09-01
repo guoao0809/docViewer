@@ -17,14 +17,6 @@ export function useKeyboard() {
       return
     }
 
-    if (isMod && event.key === 'd') {
-      event.preventDefault()
-      if (documentStore.currentDoc) {
-        documentStore.doToggleFavorite(documentStore.currentDoc.meta.id)
-      }
-      return
-    }
-
     if (isMod && event.key === 'w') {
       event.preventDefault()
       if (documentStore.activeDocId) {
@@ -50,12 +42,6 @@ export function useKeyboard() {
       const currentIndex = docs.findIndex(d => d.id === documentStore.activeDocId)
       const prevIndex = (currentIndex - 1 + docs.length) % docs.length
       documentStore.doOpenDoc(docs[prevIndex])
-      return
-    }
-
-    if (isMod && event.shiftKey && event.code === 'Backslash') {
-      event.preventDefault()
-      settingStore.doToggleDocList()
       return
     }
 

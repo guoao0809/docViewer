@@ -5,10 +5,7 @@ export interface DocMeta {
   type: 'markdown' | 'text' | 'code' | 'image'
   size: number
   modified: number
-  favorite: boolean
   tags: string[]
-  lastOpen: number | null
-  visitCount: number
   children?: DocMeta[]
 }
 

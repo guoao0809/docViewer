@@ -132,10 +132,9 @@ function truncateMiddle(name: string, maxLen = 16): string {
       class="flex items-center gap-2.5 cursor-pointer text-base transition-colors rounded-md group mb-0.5"
       :data-docid="doc.id"
       :class="{
-        'bg-active text-title': isActive(doc.id),
-        'bg-hover':isSelected(doc.id) && !isActive(doc.id),
+        'bg-primary/10 text-title font-medium border-l-2 border-l-primary': isActive(doc.id),
+        'bg-hover': isSelected(doc.id) && !isActive(doc.id),
         'text-text hover:bg-hover': !isActive(doc.id),
-        // 'ring-1 ring-primary/40': isSelected(doc.id) && !isActive(doc.id),
       }"
       :style="{ paddingLeft: (depth === 0 ? 0 : (depth * 20 + (doc.children ? 10 : 0) + (depth >= 2 && !doc.children ? 10 : 0))) + 'px' }"
       @click="handleClick(doc)"
