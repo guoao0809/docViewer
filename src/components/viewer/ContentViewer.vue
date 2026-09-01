@@ -224,7 +224,7 @@ function handleContentError(error: unknown) {
       <span class="text-lg font-semibold truncate flex-1 text-title">
         {{ documentStore.currentDoc.meta.name }}
       </span>
-      <Button v-if="documentStore.currentDoc.meta.type !== 'image'" variant="ghost" size="icon"
+      <Button v-if="documentStore.currentDoc.meta.type === 'markdown' || documentStore.currentDoc.meta.type === 'code' || documentStore.currentDoc.meta.type === 'text'" variant="ghost" size="icon"
         class="text-text/200 hover:bg-hover" :title="viewMode ? '编辑' : '查看'" @click="toggleEditMode">
         <Edit3 v-if="viewMode" class="w-4 h-4" />
         <Eye v-else class="w-4 h-4" />
