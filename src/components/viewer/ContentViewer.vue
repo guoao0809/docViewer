@@ -13,7 +13,7 @@ import { json } from '@codemirror/lang-json'
 
 import { OpenFileViewer } from '@open-file-viewer/vue'
 import { pdfPlugin } from '@open-file-viewer/core'
-import '@open-file-viewer/core/dist/style.css'
+import '@open-file-viewer/core/style.css'
 import pdfWorkerSrc from 'pdfjs-dist/build/pdf.worker.mjs?url'
 
 const documentStore = useDocumentStore()
