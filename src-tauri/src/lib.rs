@@ -1,4 +1,3 @@
-use base64::Engine;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
@@ -179,13 +178,6 @@ fn scan_dir_recursive(path: &Path, depth: u32) -> Result<Vec<serde_json::Value>,
 }
 
 #[tauri::command]
-fn read_image_base64(path: String) -> Result<String, String> {
-    let bytes = std::fs::read(&path)
-        .map_err(|e| format!("Failed to read image: {}", e))?;
-    Ok(base64::engine::general_purpose::STANDARD.encode(&bytes))
-}
-
-#[tauri::command]
 fn read_file_bytes(path: String) -> Result<Vec<u8>, String> {
     std::fs::read(&path)
         .map_err(|e| format!("Failed to read file bytes: {}", e))
@@ -289,7 +281,6 @@ pub fn run() {
             scan_directory,
             read_document,
             get_file_metadata,
-            read_image_base64,
             read_file_bytes,
             write_document,
             create_file,

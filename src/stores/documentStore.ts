@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import type { DocMeta, DocContent } from '@/types/document'
-import { scanDirectory, readDocument, getFileMetadata, readImageBase64, readFileBytes } from '@/services/tauriService'
+import { scanDirectory, readDocument, getFileMetadata, readFileBytes } from '@/services/tauriService'
 import { parseMarkdown } from '@/services/markdownService'
 import { useSearchStore } from './searchStore'
 
@@ -169,18 +169,8 @@ export const useDocumentStore = defineStore('document', () => {
         meta.modified = fileMeta.modified
       } catch { /* ignore */ }
 
-      // 图片文件：读取 base64 用于显示
-      if (meta.type === 'image') {
-        const ext = meta.name.split('.').pop()?.toLowerCase() || 'png'
-        const mimeMap: Record<string, string> = { jpg: 'jpeg', jpeg: 'jpeg', png: 'png', gif: 'gif', webp: 'webp', svg: 'svg+xml', bmp: 'bmp', ico: 'x-icon' }
-        const mime = mimeMap[ext] || 'png'
-        const base64 = await readImageBase64(id)
-        currentDoc.value = { meta, raw: `data:image/${mime};base64,${base64}`, html: '', toc: [] }
-        persistState()
-        return
-      }
-
-      if (meta.type === 'pdf') {
+      // 图片/PDF 文件：读取原始字节，交给 OpenFileViewer 预览
+      if (meta.type === 'image' || meta.type === 'pdf') {
         const bytes = await readFileBytes(id)
         currentDoc.value = { meta, raw: '', html: '', toc: [], bytes }
         persistState()
