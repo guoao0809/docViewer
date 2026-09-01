@@ -11,6 +11,11 @@ import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
 import { markdown } from '@codemirror/lang-markdown'
 import { json } from '@codemirror/lang-json'
 
+import { OpenFileViewer } from '@open-file-viewer/vue'
+import { pdfPlugin } from '@open-file-viewer/core'
+import '@open-file-viewer/core/dist/style.css'
+import pdfWorkerSrc from 'pdfjs-dist/build/pdf.worker.mjs?url'
+
 const documentStore = useDocumentStore()
 const searchStore = useSearchStore()
 
@@ -34,6 +39,13 @@ function getLanguageExtension(fileName: string) {
   if (ext === 'md' || ext === 'markdown') return markdown()
   if (ext === 'json') return json()
   return []
+}
+
+const pdfPlugins = [pdfPlugin({ workerSrc: pdfWorkerSrc })]
+
+function pdfBlob(): Blob {
+  const bytes = documentStore.currentDoc?.bytes
+  return new Blob([bytes ?? new ArrayBuffer(0)], { type: 'application/pdf' })
 }
 
 /** 切换到编辑模式 */
@@ -188,6 +200,10 @@ watch(() => searchStore.highlightTarget, async (target) => {
 function handleContentClick() {
   searchStore.doClearHighlight()
 }
+
+function handleContentError(error: unknown) {
+  console.error('PDF preview failed:', error)
+}
 </script>
 
 <template>
@@ -259,6 +275,22 @@ function handleContentClick() {
         <img :src="documentStore.currentDoc.raw" :alt="documentStore.currentDoc.meta.name"
           :style="{ transform: `scale(${imgZoom}) rotate(${imgRotate}deg)`, transition: 'transform 0.2s' }"
           class="rounded-lg shadow-lg" />
+      </div>
+    </template>
+    <!-- PDF viewer -->
+    <template v-else-if="documentStore.currentDoc.meta.type === 'pdf'">
+      <div class="flex-1 min-h-0 overflow-hidden bg-bg">
+        <OpenFileViewer
+          :file="pdfBlob()"
+          :file-name="documentStore.currentDoc.meta.name"
+          :plugins="pdfPlugins"
+          width="100%"
+          height="100%"
+          fit="contain"
+          toolbar
+          theme="auto"
+          @error="handleContentError"
+        />
       </div>
     </template>
     <template v-else>
