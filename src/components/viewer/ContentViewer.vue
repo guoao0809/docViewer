@@ -3,6 +3,7 @@ import { ref, watch, nextTick, onBeforeUnmount, computed } from 'vue'
 import { useDocumentStore } from '@/stores/documentStore'
 import { useSearchStore } from '@/stores/searchStore'
 import { openFileDialog, writeDocument } from '@/services/tauriService'
+import { openUrl } from '@tauri-apps/plugin-opener'
 import { FileText, Edit3, Eye } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 
@@ -194,8 +195,27 @@ watch(() => searchStore.highlightTarget, async (target) => {
   scrollToFirstMatch()
 })
 
-function handleContentClick() {
+/**
+ * Markdown 里的外部链接（http/https/mailto/tel）交给系统默认浏览器打开，
+ * 阻止 WebView 把它当作页面内导航（否则应用内打开、无法回退）。
+ * 返回 true 表示已处理。
+ */
+function openExternalLink(e: MouseEvent): boolean {
+  const anchor = (e.target as HTMLElement | null)?.closest('a')
+  const href = anchor?.getAttribute('href') ?? ''
+  if (!/^(https?|mailto|tel):/i.test(href)) return false
+  e.preventDefault()
+  openUrl(href).catch(err => console.error('Failed to open link:', err))
+  return true
+}
+
+function handleContentClick(e: MouseEvent) {
+  openExternalLink(e)
   searchStore.doClearHighlight()
+}
+
+function handleContentContextMenu(e: MouseEvent) {
+  openExternalLink(e)
 }
 
 function handleContentError(error: unknown) {
@@ -268,7 +288,8 @@ function handleContentError(error: unknown) {
     </template>
     <template v-else>
       <!-- View mode -->
-      <div v-if="viewMode" class="flex-1 overflow-y-auto" @click="handleContentClick">
+      <div v-if="viewMode" class="flex-1 overflow-y-auto" @click="handleContentClick"
+        @contextmenu="handleContentContextMenu">
         <div class="markdown-content" v-html="documentStore.currentDoc.html" />
       </div>
 
