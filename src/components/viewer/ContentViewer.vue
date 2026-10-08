@@ -6,6 +6,7 @@ import { openFileDialog, writeDocument } from '@/services/tauriService'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { FileText, Edit3, Eye } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 
 import { EditorView, keymap, lineNumbers } from '@codemirror/view'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
@@ -195,18 +196,30 @@ watch(() => searchStore.highlightTarget, async (target) => {
   scrollToFirstMatch()
 })
 
+/** 待确认打开的外部链接：点击后先弹确认框，确认后才交给系统浏览器 */
+const pendingLink = ref<string | null>(null)
+
 /**
- * Markdown 里的外部链接（http/https/mailto/tel）交给系统默认浏览器打开，
- * 阻止 WebView 把它当作页面内导航（否则应用内打开、无法回退）。
- * 返回 true 表示已处理。
+ * 拦截 Markdown 里的外部链接（http/https/mailto/tel），阻止 WebView 把它
+ * 当作页面内导航（否则应用内打开、无法回退），改为先弹确认。返回 true 表示已处理。
  */
 function openExternalLink(e: MouseEvent): boolean {
   const anchor = (e.target as HTMLElement | null)?.closest('a')
   const href = anchor?.getAttribute('href') ?? ''
   if (!/^(https?|mailto|tel):/i.test(href)) return false
   e.preventDefault()
-  openUrl(href).catch(err => console.error('Failed to open link:', err))
+  pendingLink.value = href
   return true
+}
+
+function doConfirmOpenLink() {
+  const url = pendingLink.value
+  pendingLink.value = null
+  if (url) openUrl(url).catch(err => console.error('Failed to open link:', err))
+}
+
+function doCancelOpenLink() {
+  pendingLink.value = null
 }
 
 function handleContentClick(e: MouseEvent) {
@@ -296,6 +309,16 @@ function handleContentError(error: unknown) {
       <!-- Edit mode -->
       <div v-else ref="editorContainer" class="flex-1 overflow-hidden bg-bg" />
     </template>
+
+    <!-- 打开外部链接确认 -->
+    <ConfirmDialog
+      :open="pendingLink !== null"
+      title="打开外部链接"
+      :description="`确定要在系统浏览器中打开此链接吗？${pendingLink ?? ''}`"
+      :danger="false"
+      @confirm="doConfirmOpenLink"
+      @cancel="doCancelOpenLink"
+    />
 
   </div>
 </template>

@@ -9,11 +9,18 @@ import {
 import { X } from 'lucide-vue-next'
 import { Button } from './button'
 
-defineProps<{
+withDefaults(defineProps<{
   open: boolean
   title: string
   description: string
-}>()
+  /** 显示「下次不再询问」复选框（破坏性操作专用），默认关闭 */
+  showSkip?: boolean
+  /** 确定按钮用危险色（红色），默认开启 */
+  danger?: boolean
+}>(), {
+  showSkip: false,
+  danger: true,
+})
 
 const emit = defineEmits<{
   confirm: []
@@ -48,7 +55,7 @@ function handleConfirm() {
           <p class="text-sm text-text">{{ description }}</p>
         </div>
 
-        <div class="flex items-center gap-2 py-1 mb-4">
+        <div v-if="showSkip" class="flex items-center gap-2 py-1 mb-4">
           <input
             id="skip-confirm"
             v-model="skipNext"
@@ -62,7 +69,10 @@ function handleConfirm() {
 
         <div class="flex justify-end gap-x-2">
           <Button variant="outline" @click="emit('cancel')">取消</Button>
-          <Button class="bg-red-500 text-white hover:bg-red-600" @click="handleConfirm">确定</Button>
+          <Button
+            :class="danger ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-primary text-white hover:bg-primary/90'"
+            @click="handleConfirm"
+          >确定</Button>
         </div>
       </DialogContent>
     </DialogPortal>

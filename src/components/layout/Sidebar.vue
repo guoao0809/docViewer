@@ -5,7 +5,7 @@ import { useDocumentStore } from '@/stores/documentStore'
 import { useSearchStore } from '@/stores/searchStore'
 import { useSettingStore } from '@/stores/settingStore'
 import { openFileDialog } from '@/services/tauriService'
-import { FolderPlus, FilePlus, Plus, ChevronsUpDown, Search, PanelLeftClose, PanelLeftOpen } from 'lucide-vue-next'
+import { FolderPlus, Plus, ChevronsUpDown, Search, PanelLeftClose, PanelLeftOpen } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 
@@ -157,6 +157,7 @@ function handleCollapsedNav() {
         :open="documentStore.pendingRemoveId !== null"
         title="确认移除"
         :description="`确定要移除文件夹「${documentStore.pendingRemoveName}」吗？`"
+        show-skip
         @confirm="documentStore.doConfirmRemove()"
         @cancel="documentStore.doCancelRemove()"
       />
