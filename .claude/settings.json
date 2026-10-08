@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const p=require\\('./node_modules/@open-file-viewer/core/package.json'\\); console.log\\(JSON.stringify\\(p.exports||'none',null,2\\)\\)\")",
+      "Bash(echo \"EXIT_CODE=$?\")",
+      "Bash(grep -oE \"search[^,}]{0,40}|download[^,}]{0,20}|zoom-reset[^,}]{0,20}|DEFAULT[^,;]{0,40}\" node_modules/@open-file-viewer/core/dist/index.js)"
+    ]
+  }
+}
