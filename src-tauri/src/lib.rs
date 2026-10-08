@@ -205,6 +205,25 @@ fn create_folder(path: String, name: String) -> Result<String, String> {
     Ok(full.to_string_lossy().to_string())
 }
 
+#[tauri::command]
+fn rename_path(path: String, new_name: String) -> Result<String, String> {
+    let src = Path::new(&path);
+    let parent = src
+        .parent()
+        .ok_or_else(|| "Invalid path: no parent directory".to_string())?;
+    let dest = parent.join(&new_name);
+    if dest.exists() {
+        return Err(format!("目标已存在同名项：{}", new_name));
+    }
+    fs::rename(src, &dest).map_err(|e| format!("Failed to rename: {}", e))?;
+    Ok(dest.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+fn trash_path(path: String) -> Result<(), String> {
+    trash::delete(&path).map_err(|e| format!("Failed to move to trash: {}", e))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -218,6 +237,7 @@ pub fn run() {
         }))
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             if cfg!(debug_assertions) {
@@ -285,7 +305,9 @@ pub fn run() {
             read_file_bytes,
             write_document,
             create_file,
-            create_folder
+            create_folder,
+            rename_path,
+            trash_path
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

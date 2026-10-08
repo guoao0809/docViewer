@@ -17,6 +17,8 @@
     "fs:allow-exists",
     "dialog:allow-open",
     "opener:allow-open-url",
-    "opener:allow-default-urls"
+    "opener:allow-default-urls",
+    "clipboard-manager:allow-write-text",
+    "opener:allow-reveal-item-in-dir"
   ]
 }
