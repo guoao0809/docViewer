@@ -207,6 +207,9 @@ fn create_folder(path: String, name: String) -> Result<String, String> {
 
 #[tauri::command]
 fn rename_path(path: String, new_name: String) -> Result<String, String> {
+    if new_name.contains('/') || new_name.contains('\\') || new_name == "." || new_name == ".." {
+        return Err("文件名不能包含路径分隔符".to_string());
+    }
     let src = Path::new(&path);
     let parent = src
         .parent()

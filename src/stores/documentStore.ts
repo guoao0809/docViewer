@@ -277,15 +277,28 @@ export const useDocumentStore = defineStore('document', () => {
     remap(node)
     node.name = trimmed
 
+    const withinOld = (p: string) =>
+      p === oldPath || p.startsWith(oldPath + '/') || p.startsWith(oldPath + '\\')
+
     const idx = rootPaths.value.indexOf(oldPath)
     if (idx >= 0) rootPaths.value[idx] = newPath
-    if (activeDocId.value && (activeDocId.value === oldPath || activeDocId.value.startsWith(oldPath + '/') || activeDocId.value.startsWith(oldPath + '\\'))) {
+    if (activeDocId.value && withinOld(activeDocId.value)) {
       activeDocId.value = newPath + activeDocId.value.slice(oldPath.length)
     }
+    if (selectedNodeId.value && withinOld(selectedNodeId.value)) {
+      selectedNodeId.value = newPath + selectedNodeId.value.slice(oldPath.length)
+    }
+    // 展开态以路径作键，重映射后重命名文件夹不会意外折叠
+    const nextExpanded = new Set<string>()
+    for (const k of expandedDirs.value) {
+      nextExpanded.add(withinOld(k) ? newPath + k.slice(oldPath.length) : k)
+    }
+    expandedDirs.value = nextExpanded
 
     renamingNodeId.value = null
     docTree.value = [...docTree.value]
     persistState()
+    useSearchStore().doBuildIndex()
   }
 
   /** 删除：先弹确认 */
@@ -315,23 +328,47 @@ export const useDocumentStore = defineStore('document', () => {
       return
     }
 
-    if (currentDoc.value && (currentDoc.value.meta.id === id || currentDoc.value.meta.id.startsWith(id + '/') || currentDoc.value.meta.id.startsWith(id + '\\'))) {
-      currentDoc.value = null
-      activeDocId.value = null
+    const within = (p: string | null | undefined) =>
+      !!p && (p === id || p.startsWith(id + '/') || p.startsWith(id + '\\'))
+
+    // 清理已打开标签 / 当前文档 / 选中态
+    openedDocs.value = openedDocs.value.filter(d => !within(d.id))
+    if (within(currentDoc.value?.meta.id)) currentDoc.value = null
+    if (within(selectedNodeId.value)) selectedNodeId.value = null
+    if (within(activeDocId.value)) {
+      const nextTab = openedDocs.value[0]
+      activeDocId.value = nextTab ? nextTab.id : null
+      if (nextTab) doLoadDocument(nextTab.id)
     }
-    if (activeDocId.value === id) activeDocId.value = null
 
     if (rootPaths.value.includes(id)) {
       rootPaths.value = rootPaths.value.filter(p => p !== id)
+      const nextExpanded = new Set<string>()
+      for (const k of expandedDirs.value) if (!within(k)) nextExpanded.add(k)
+      expandedDirs.value = nextExpanded
       docTree.value = docTree.value.filter(d => d.id !== id)
-      expandedDirs.value.delete(id)
-      expandedDirs.value = new Set(expandedDirs.value)
       persistState()
       useSearchStore().doBuildIndex()
     } else {
-      const parentPath = getParentPath(id)
-      await doRefreshChildren(parentPath)
+      // 刷新包含该节点的父目录。必须按节点 id 定位，不能用 getParentPath
+      //（它为「在其下创建」服务，会返回规范化后的正斜杠路径，与节点 id 不匹配）
+      const parentDirId = getContainingDirId(id)
+      if (parentDirId) await doRefreshChildren(parentDirId)
     }
+  }
+
+  /** 查找包含指定节点的父目录节点 id（用于删除后刷新）；找不到返回空串 */
+  function getContainingDirId(id: string): string {
+    const search = (docs: DocMeta[]): string | null => {
+      for (const d of docs) {
+        if (!d.children) continue
+        if (d.children.some(c => c.id === id)) return d.id
+        const found = search(d.children)
+        if (found) return found
+      }
+      return null
+    }
+    return search(docTree.value) ?? ''
   }
 
   function findDocById(id: string, docs: DocMeta[]): DocMeta | null {
