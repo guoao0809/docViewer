@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import type { DocMeta, DocContent } from '@/types/document'
-import { scanDirectory, readDocument, getFileMetadata, readFileBytes } from '@/services/tauriService'
+import { scanDirectory, readDocument, getFileMetadata, readFileBytes, renamePath, trashPath } from '@/services/tauriService'
 import { parseMarkdown } from '@/services/markdownService'
 import { useSearchStore } from './searchStore'
+import { writeText } from '@tauri-apps/plugin-clipboard-manager'
+import { revealItemInDir } from '@tauri-apps/plugin-opener'
 
 const STORAGE_KEY = 'docviewer-state'
 
@@ -41,6 +43,14 @@ export const useDocumentStore = defineStore('document', () => {
   const selectedNodeId = ref<string | null>(null)
   const pendingRemoveId = ref<string | null>(null)
   const pendingRemoveName = ref('')
+
+  // 右键菜单状态
+  const contextMenu = ref<{ visible: boolean; x: number; y: number; nodeId: string | null }>({
+    visible: false, x: 0, y: 0, nodeId: null,
+  })
+  const renamingNodeId = ref<string | null>(null)
+  const pendingTrashId = ref<string | null>(null)
+  const pendingTrashName = ref('')
 
   function doRequestRemove(id: string, name: string) {
     if (localStorage.getItem('docviewer-skip-remove-confirm') === 'true') {
@@ -209,6 +219,121 @@ export const useDocumentStore = defineStore('document', () => {
     }
   }
 
+  function doOpenContextMenu(x: number, y: number, nodeId: string) {
+    contextMenu.value = { visible: true, x, y, nodeId }
+  }
+
+  function doCloseContextMenu() {
+    contextMenu.value = { visible: false, x: 0, y: 0, nodeId: null }
+  }
+
+  function doStartRename(id: string) { renamingNodeId.value = id }
+  function doCancelRename() { renamingNodeId.value = null }
+
+  /** 复制节点完整路径到系统剪贴板 */
+  async function doCopyPath(id: string) {
+    const node = findDocById(id, docTree.value)
+    if (!node) return
+    try {
+      await writeText(node.path)
+    } catch (e) {
+      console.error('Failed to copy path:', e)
+    }
+  }
+
+  /** 在系统文件管理器中定位该节点 */
+  async function doRevealInExplorer(id: string) {
+    const node = findDocById(id, docTree.value)
+    if (!node) return
+    try {
+      await revealItemInDir(node.path)
+    } catch (e) {
+      console.error('Failed to reveal in explorer:', e)
+    }
+  }
+
+  /** 重命名：改名并同步更新子树 id/path、根路径与当前激活项 */
+  async function doRenameNode(id: string, newName: string) {
+    const node = findDocById(id, docTree.value)
+    if (!node) return
+    const trimmed = newName.trim()
+    if (!trimmed || trimmed === node.name) { renamingNodeId.value = null; return }
+
+    let newPath: string
+    try {
+      newPath = await renamePath(id, trimmed)
+    } catch (e) {
+      console.error('Rename failed:', e)
+      renamingNodeId.value = null
+      return
+    }
+
+    const oldPath = node.path
+    const remap = (n: DocMeta) => {
+      n.id = newPath + n.id.slice(oldPath.length)
+      n.path = n.id
+      n.children?.forEach(remap)
+    }
+    remap(node)
+    node.name = trimmed
+
+    const idx = rootPaths.value.indexOf(oldPath)
+    if (idx >= 0) rootPaths.value[idx] = newPath
+    if (activeDocId.value && (activeDocId.value === oldPath || activeDocId.value.startsWith(oldPath + '/') || activeDocId.value.startsWith(oldPath + '\\'))) {
+      activeDocId.value = newPath + activeDocId.value.slice(oldPath.length)
+    }
+
+    renamingNodeId.value = null
+    docTree.value = [...docTree.value]
+    persistState()
+  }
+
+  /** 删除：先弹确认 */
+  function doRequestTrash(id: string) {
+    const node = findDocById(id, docTree.value)
+    if (!node) return
+    pendingTrashId.value = id
+    pendingTrashName.value = node.name
+  }
+
+  function doCancelTrash() {
+    pendingTrashId.value = null
+    pendingTrashName.value = ''
+  }
+
+  /** 确认删除：移入回收站并从树中移除 */
+  async function doConfirmTrash() {
+    const id = pendingTrashId.value
+    pendingTrashId.value = null
+    pendingTrashName.value = ''
+    if (!id) return
+
+    try {
+      await trashPath(id)
+    } catch (e) {
+      console.error('Trash failed:', e)
+      return
+    }
+
+    if (currentDoc.value && (currentDoc.value.meta.id === id || currentDoc.value.meta.id.startsWith(id + '/') || currentDoc.value.meta.id.startsWith(id + '\\'))) {
+      currentDoc.value = null
+      activeDocId.value = null
+    }
+    if (activeDocId.value === id) activeDocId.value = null
+
+    if (rootPaths.value.includes(id)) {
+      rootPaths.value = rootPaths.value.filter(p => p !== id)
+      docTree.value = docTree.value.filter(d => d.id !== id)
+      expandedDirs.value.delete(id)
+      expandedDirs.value = new Set(expandedDirs.value)
+      persistState()
+      useSearchStore().doBuildIndex()
+    } else {
+      const parentPath = getParentPath(id)
+      await doRefreshChildren(parentPath)
+    }
+  }
+
   function findDocById(id: string, docs: DocMeta[]): DocMeta | null {
     for (const doc of docs) {
       if (doc.id === id) return doc
@@ -304,6 +429,10 @@ export const useDocumentStore = defineStore('document', () => {
     openedDocs, activeDocId, selectedNodeId,
     pendingRemoveId, pendingRemoveName,
     doRequestRemove, doConfirmRemove, doCancelRemove,
+    contextMenu, doOpenContextMenu, doCloseContextMenu,
+    renamingNodeId, doStartRename, doCancelRename,
+    pendingTrashId, pendingTrashName, doRequestTrash, doConfirmTrash, doCancelTrash,
+    doCopyPath, doRevealInExplorer, doRenameNode,
     doScanDirectory, doLoadDocument, doToggleExpanded,
     doRemoveRootFolder, doOpenDoc, doRemoveOpenedDoc,
     doSelectNode, doCollapseAll, getParentPath, doRefreshChildren,
