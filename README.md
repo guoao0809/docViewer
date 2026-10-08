@@ -2,7 +2,7 @@
 
 > 面向开发者的本地知识库 — 快速阅读和管理本地文档
 
-DocViewer 是一款基于 Tauri 2 的桌面应用，提供原生的文档阅读体验。支持 Markdown、代码文件等多种格式，内置全文搜索、语法高亮、双主题切换等功能，所有数据本地存储，无需联网。
+DocViewer 是一款基于 Tauri 2 的桌面应用，提供原生的文档阅读体验。支持 Markdown、代码文件、图片与 PDF 等多种格式，内置全文搜索、语法高亮、双主题切换、右键文件管理等功能，所有数据本地存储，无需联网。
 
 ![Dark Theme](docs/screenshots/dark.png)
 ![Light Theme](docs/screenshots/light.png)
@@ -14,8 +14,10 @@ DocViewer 是一款基于 Tauri 2 的桌面应用，提供原生的文档阅读�
 | 格式 | 扩展名 | 渲染方式 |
 |---|---|---|
 | Markdown | `.md`, `.markdown` | 完整渲染 + 语法高亮 |
-| 代码/配置 | `.json`, `.yaml`, `.yml`, `.toml`, `.xml`, `.csv` | 纯文本显示 |
+| 代码/配置 | `.json`, `.yaml`, `.yml`, `.toml`, `.xml`, `.csv` | 语法高亮 / 纯文本 |
 | 文本 | `.txt` | 纯文本显示 |
+| 图片 | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.svg`, `.bmp`, `.ico` | 内嵌预览，可缩放/旋转/全屏 |
+| PDF | `.pdf` | 内嵌预览，支持翻页/缩放/文本搜索 |
 
 - 自动检测文件编码（UTF-8/UTF-16/GBK/Shift-JIS 等）
 - 支持多个文件夹同时打开
@@ -23,28 +25,37 @@ DocViewer 是一款基于 Tauri 2 的桌面应用，提供原生的文档阅读�
 
 ### 🔍 全文搜索
 
-- 基于 MiniSearch 的内存倒排索引，毫秒级响应
+- 基于 MiniSearch 的内存倒排索引，毫秒级响应（仅索引文本类文件）
 - 支持模糊匹配（容错拼写错误）和前缀匹配
 - 搜索结果展示上下文片段和行号
 - 跳转到文档后自动高亮匹配内容并滚动到位置
 - 搜索历史持久化（最多 20 条），支持单条删除和清空
 
+### 📄 文件管理
+
+在左侧文件树中右键文件或文件夹，可：
+
+- **复制文件路径** — 将完整路径写入系统剪贴板
+- **在文件资源管理器中显示** — 调用系统文件管理器定位该文件
+- **重命名** — 行内编辑，自动同步已打开文档的路径
+- **删除** — 二次确认后移入系统回收站（可恢复）
+
 ### 🎨 界面
 
 - **深色 / 浅色双主题**，一键切换
-- **三栏布局**：导航侧边栏 | 文档列表 | 内容阅读区
-- **可拖拽调整宽度**：侧边栏（180–400px）和文档列表（220–500px）
-- **彩色文件类型徽章**：Markdown（蓝）、JSON（黄）、PDF（红）、其他（绿）
+- **两栏布局**：导航侧边栏 | 内容阅读区
+- **可拖拽调整宽度**：侧边栏（180–400px）
+- **彩色文件类型徽章**：Markdown（蓝）、JSON（黄）、PDF（红）、图片（紫）、其他（绿）
 - 自定义无框窗口，带最小化 / 最大化 / 关闭按钮
 - 自定义滚动条样式
+- 关闭窗口时最小化到系统托盘
 
 ### ⌨️ 快捷键
 
 | 快捷键 | 功能 |
 |---|---|
 | `Ctrl/⌘ + K` | 打开搜索 |
-| `Ctrl/⌘ + D` | 收藏 / 取消收藏当前文档 |
-| `Ctrl/ + W` | 关闭当前文档 |
+| `Ctrl/⌘ + W` | 关闭当前文档 |
 | `Ctrl/⌘ + Tab` | 切换到下一篇文档 |
 | `Ctrl/⌘ + Shift + Tab` | 切换到上一篇文档 |
 | `Ctrl/⌘ + \` | 切换侧边栏显示 |
@@ -59,13 +70,15 @@ DocViewer 是一款基于 Tauri 2 的桌面应用，提供原生的文档阅读�
 - 标题锚点链接，hover 显示 `#` 符号
 - DOMPurify HTML 安全过滤
 - 自动生成目录（TOC）
+- 内置编辑模式（CodeMirror），改动停顿 1.5 秒后自动保存到原文件
+- 外部链接点击后先确认，再由系统默认浏览器打开
 
 ### 💾 数据持久化
 
 所有状态自动保存到 `localStorage`，重启后恢复：
 
 - 已打开的文件夹路径和文档树结构
-- 文档收藏状态、最后打开时间、访问次数
+- 已打开的文档标签与展开状态
 - 主题偏好、侧边栏宽度和折叠状态
 - 搜索历史记录
 
@@ -78,6 +91,7 @@ DocViewer 是一款基于 Tauri 2 的桌面应用，提供原生的文档阅读�
 | 状态管理 | Pinia 3 |
 | 样式 | Tailwind CSS 4 + 语义化 Token |
 | Markdown | markdown-it + Shiki + DOMPurify |
+| 预览 | open-file-viewer + pdfjs-dist |
 | 搜索 | MiniSearch 7 |
 | 图标 | Lucide Vue Next |
 | UI 组件 | Reka UI + CVA |
@@ -98,28 +112,30 @@ DocViewer 是一款基于 Tauri 2 的桌面应用，提供原生的文档阅读�
 git clone <repo-url>
 cd docviewer
 
-# 安装依赖
-npm install
+# 安装依赖（项目使用 pnpm）
+pnpm install
 
 # 开发模式（仅前端）
-npm run dev
+pnpm run dev
 
 # 完整 Tauri 开发模式（Rust + 前端 + 原生窗口）
-npm run tauri dev
+pnpm run tauri dev
 
 # 生产构建
-npm run build
-npm run tauri build
+pnpm run build
+pnpm run tauri build
 ```
+
+> 使用 `npm run *` 同样可用。
 
 ### 命令说明
 
 | 命令 | 说明 |
 |---|---|
-| `npm run dev` | Vite 开发服务器（端口 1420） |
-| `npm run build` | TypeScript 类型检查 + Vite 生产构建 |
-| `npm run tauri dev` | 完整 Tauri 开发模式 |
-| `npm run tauri build` | 生产构建（前端 + Rust，生成安装包） |
+| `pnpm run dev` | Vite 开发服务器（端口 1420） |
+| `pnpm run build` | TypeScript 类型检查 + Vite 生产构建 |
+| `pnpm run tauri dev` | 完整 Tauri 开发模式 |
+| `pnpm run tauri build` | 生产构建（前端 + Rust，生成安装包） |
 
 ## 📂 项目结构
 
@@ -127,14 +143,13 @@ npm run tauri build
 docviewer/
 ├── src/                    # 前端源码
 │   ├── components/
-│   │   ├── layout/         # 布局组件（Header, Sidebar, DocumentList, StatusBar）
+│   │   ├── layout/         # 布局组件（Header, Sidebar, StatusBar）
 │   │   ├── search/         # 搜索面板
 │   │   ├── sidebar/        # 文件夹树组件
-│   │   ├── ui/             # 基础 UI 组件（Button, Badge, ScrollArea 等）
-│   │   ── viewer/         # 文档内容查看器
+│   │   ├── ui/             # 基础 UI 组件（Button, ContextMenu, ConfirmDialog 等）
+│   │   └── viewer/         # 文档内容查看器
 │   ├── composables/        # 组合式函数（键盘快捷键）
 │   ├── layouts/            # 页面布局
-│   ├── pages/              # 页面（欢迎页）
 │   ├── services/           # 服务层（Tauri IPC, Markdown 解析, 搜索）
 │   ├── stores/             # Pinia 状态管理
 │   ├── types/              # TypeScript 类型定义
@@ -142,12 +157,12 @@ docviewer/
 │   ├── main.ts             # 挂载入口
 │   └── style.css           # 全局样式 + 主题变量
 ├── src-tauri/              # Rust 后端
-│   ├── src/lib.rs          # Tauri 命令（扫描目录、读取文件、获取元数据）
+│   ├── src/lib.rs          # Tauri 命令（扫描/读写/重命名/回收站）
 │   ├── capabilities/       # 权限配置
 │   └── tauri.conf.json     # Tauri 应用配置
 └── package.json
 ```
 
-##  许可证
+## 📄 许可证
 
 ISC
