@@ -19,6 +19,24 @@ const documentStore = useDocumentStore()
 
 const newName = ref('')
 const inputRef = ref<HTMLInputElement | null>(null)
+
+// 重命名（行内编辑）
+const renameName = ref('')
+const renameInputRef = ref<HTMLInputElement | null>(null)
+const isRenaming = computed(() => documentStore.renamingNodeId === props.doc.id)
+
+watch(isRenaming, async (val) => {
+  if (val) {
+    renameName.value = props.doc.name
+    await nextTick()
+    renameInputRef.value?.focus()
+    renameInputRef.value?.select()
+  }
+})
+
+async function handleRenameSubmit() {
+  await documentStore.doRenameNode(props.doc.id, renameName.value)
+}
 const isCreating = computed(() => {
   if (!props.createMode) return false
   // 文件夹被选中 → 在其下创建
@@ -41,6 +59,11 @@ function handleClick(doc: DocMeta) {
   } else {
     documentStore.doOpenDoc(doc)
   }
+}
+
+function handleContextMenu(e: MouseEvent, doc: DocMeta) {
+  documentStore.doSelectNode(doc.id)
+  documentStore.doOpenContextMenu(e.clientX, e.clientY, doc.id)
 }
 
 const isRoot = computed(() => props.depth === 0 && props.doc.children)
@@ -138,13 +161,25 @@ function truncateMiddle(name: string, maxLen = 16): string {
       }"
       :style="{ paddingLeft: (depth === 0 ? 0 : (depth * 20 + (doc.children ? 10 : 0) + (depth >= 2 && !doc.children ? 10 : 0))) + 'px' }"
       @click="handleClick(doc)"
+      @contextmenu.prevent="handleContextMenu($event, doc)"
     >
       <template v-if="doc.children">
         <ChevronDown v-if="isExpanded(doc.id) || shouldAutoExpand" class="w-3.5 h-3.5 shrink-0 text-text/40" />
         <ChevronRight v-else class="w-3.5 h-3.5 shrink-0 text-text/40" />
         <FolderOpen v-if="isExpanded(doc.id) || shouldAutoExpand" class="w-5 h-5 shrink-0 text-amber-500 fill-current" />
         <Folder v-else class="w-5 h-5 shrink-0 text-amber-500 fill-current" />
-        <span class="truncate text-[16px] font-medium">
+        <input
+          v-if="isRenaming"
+          ref="renameInputRef"
+          v-model="renameName"
+          type="text"
+          class="flex-1 min-w-0 bg-transparent border-b border-primary text-[16px] font-medium text-text outline-none px-1"
+          @click.stop
+          @keydown.enter.prevent="handleRenameSubmit"
+          @keydown.esc="documentStore.doCancelRename()"
+          @blur="documentStore.doCancelRename()"
+        />
+        <span v-else class="truncate text-[16px] font-medium">
           {{ doc.name }}
           <span class="text-[13px] text-text/50">({{ countDocs(doc) }})</span>
         </span>
@@ -165,7 +200,18 @@ function truncateMiddle(name: string, maxLen = 16): string {
         >
           {{ getFileTypeBadge(doc.name).letter }}
         </div>
-        <span class="truncate" :title="doc.name">{{ truncateMiddle(doc.name) }}</span>
+        <input
+          v-if="isRenaming"
+          ref="renameInputRef"
+          v-model="renameName"
+          type="text"
+          class="flex-1 min-w-0 bg-transparent border-b border-primary text-sm text-text outline-none px-1"
+          @click.stop
+          @keydown.enter.prevent="handleRenameSubmit"
+          @keydown.esc="documentStore.doCancelRename()"
+          @blur="documentStore.doCancelRename()"
+        />
+        <span v-else class="truncate" :title="doc.name">{{ truncateMiddle(doc.name) }}</span>
       </template>
     </div>
 
