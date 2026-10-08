@@ -93,3 +93,23 @@ export async function createFolder(path: string, name: string): Promise<string> 
     throw error
   }
 }
+
+/** Rename an item in place, returns the new absolute path */
+export async function renamePath(path: string, newName: string): Promise<string> {
+  try {
+    return await invoke<string>('rename_path', { path, newName })
+  } catch (error) {
+    console.error('Failed to rename:', error)
+    throw error
+  }
+}
+
+/** Move a file/folder to the system trash (recycle bin) */
+export async function trashPath(path: string): Promise<void> {
+  try {
+    await invoke('trash_path', { path })
+  } catch (error) {
+    console.error('Failed to move to trash:', error)
+    throw error
+  }
+}
